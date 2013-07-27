@@ -1,0 +1,77 @@
+{	
+	"name": "Connor Atherton",
+	"course": "Combined Sciences",
+
+	"modules" : {
+
+		"MATH210": 
+		{
+			"overallWeight": 20,
+			"weekly": {
+				"weight" : 50,
+				"mark": 64
+				},
+			"weekly2": {
+				"weight" : 30,
+				"mark": 89
+				},
+			"exam": {
+				"weight" : 20,
+				"mark": "undefined" 
+				}
+		},
+
+		"MATH215": 
+		{
+			"overallWeight": 15,
+			"weekly": {
+				"weight" : 50,
+				"mark": 64
+				},
+			"weekly2": {
+				"weight" : 30,
+				"mark": 89
+				},
+			"exam": {
+				"weight" : 20,
+				"mark": "undefined" 
+				}
+		},
+
+		"MATH217": 
+		{
+			"overallWeight": 10,
+			"weekly": {
+				"weight" : 50,
+				"mark": 64
+				},
+			"weekly2": {
+				"weight" : 30,
+				"mark": 89
+				},
+			"exam": {
+				"weight" : 20,
+				"mark": "undefined" 
+				}
+		},
+
+		"MATH225": 
+		{
+			"overallWeight": 10,
+			"weekly": {
+				"weight" : 50,
+				"mark": 64
+				},
+			"weekly2": {
+				"weight" : 30,
+				"mark": 89
+				},
+			"exam": {
+				"weight" : 20,
+				"mark": "undefined" 
+				}
+		}
+
+	}
+
+}

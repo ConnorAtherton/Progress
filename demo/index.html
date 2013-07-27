@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Progress</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link rel="stylesheet" href="style.css">
+	</head>
+
+	<body class="row">
+
+			<div>
+				<section id="data" data-user-id="connor">
+
+				</section>
+			</div>
+
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+		<script src="http://d3js.org/d3.v3.min.js"></script>
+		<script src="progress.js"></script>
+		<script>
+
+			$('#data').progress({
+
+				url: 'data/connor.json',
+
+			}).addClass('weloveProgress');
+
+		</script>
+
+	</body>
+
+</html>
