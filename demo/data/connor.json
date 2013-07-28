@@ -1,77 +1,79 @@
-{	
-	"name": "Connor Atherton",
-	"course": "Combined Sciences",
-
-	"modules" : {
-
-		"MATH210": 
-		{
-			"overallWeight": 20,
-			"weekly": {
-				"weight" : 50,
-				"mark": 64
-				},
-			"weekly2": {
-				"weight" : 30,
-				"mark": 89
-				},
-			"exam": {
-				"weight" : 20,
-				"mark": "undefined" 
-				}
+[{
+	"name" : "MATH210",
+	"work" : {
+		"assessment1" : {
+			"mark" : 58,
+			"weight" : 100
+		}
+	},
+	"overallMark" : 86
+},
+{
+	"name" : "MATH215",
+	"work" : {
+		"assessment1" : {
+			"mark" : 54,
+			"weight" : 10
 		},
-
-		"MATH215": 
-		{
-			"overallWeight": 15,
-			"weekly": {
-				"weight" : 50,
-				"mark": 64
-				},
-			"weekly2": {
-				"weight" : 30,
-				"mark": 89
-				},
-			"exam": {
-				"weight" : 20,
-				"mark": "undefined" 
-				}
+		"assessment2" : {
+			"mark" : 31,
+			"weight" : 80
 		},
-
-		"MATH217": 
-		{
-			"overallWeight": 10,
-			"weekly": {
-				"weight" : 50,
-				"mark": 64
-				},
-			"weekly2": {
-				"weight" : 30,
-				"mark": 89
-				},
-			"exam": {
-				"weight" : 20,
-				"mark": "undefined" 
-				}
-		},
-
-		"MATH225": 
-		{
-			"overallWeight": 10,
-			"weekly": {
-				"weight" : 50,
-				"mark": 64
-				},
-			"weekly2": {
-				"weight" : 30,
-				"mark": 89
-				},
-			"exam": {
-				"weight" : 20,
-				"mark": "undefined" 
-				}
+		"assessment3" : {
+			"mark" : 51,
+			"weight" : 10
 		}
 
-	}
-
-}
+	},
+	"overallMark" : 36
+},
+{
+	"name" : "MATH220",
+	"work" : {
+		"assessment1" : {
+			"mark" : 65,
+			"weight" : 40
+		},
+		"assessment2" : {
+			"mark" : 65,
+			"weight" : 60
+		}
+	},
+	"overallMark" : 95
+},
+{
+	"name" : "MATH225",
+	"work" : {
+		"assessment1" : {
+			"mark" : 72,
+			"weight" : 5
+		},
+		"assessment2" : {
+			"mark" : 61,
+			"weight" : 85
+		},
+		"assessment1" : {
+			"mark" : 63,
+			"weight" : 5
+		},
+		"assessment1" : {
+			"mark" : 45,
+			"weight" : 5
+		}
+	},
+	"overallMark" : 63
+},
+{
+	"name" : "MATH230",
+	"work" : {
+		"assessment1" : {
+			"mark" : 48,
+			"weight" : 70
+		},
+		"assessment2" : {
+			"mark" : 80,
+			"weight" : 30
+		}
+	},
+	"overallMark" : 52
+}]
