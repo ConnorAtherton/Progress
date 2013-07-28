@@ -1,0 +1,18 @@
+* 
+{
+	box-sizing: border-box;
+}
+
+body, html 
+{
+	margin: 0;
+	padding: 0;
+	height: auto;
+}
+
+.row 
+{
+	width: 100%;
+	max-width: 62.5em;
+	margin: auto;
+}
