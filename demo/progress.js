@@ -23,25 +23,120 @@ progress = function() {
     // get data from url 
     getData( url );
 
-   }
+  }
 
   progress.pie = {
 
-    show: function() {
-      progress.svg  = d3.select( el ).append('svg').attr({ 'width': 960});
+    values: {
+      w : 150,
+      h : 150,
+      outerRadius : 75,
+      innerRadius: 67
+    },
 
-      var circles = progress.svg.append('g').selectAll('circle').data(progress.data).enter()
-      .append('circle');
-      circles.attr("cx", function(d, i) {
-        return ( i * 50 ) + 130 ;
-      })
-      .attr("cy", 100)
-      .attr("r", function(d) {
-        return d.overallMark / 4;
-      });
+    show: function() {
+      progress.svg  = d3.select( el ).append('svg').attr({ 'width': 960, 'height' : 300});
+
+      progress.pie.showOverallMarks();
+      progress.pie.showModuleNames();
+
     },
 
     hide : function() {
+
+    },
+
+    showOverallMarks: function() {
+
+
+      var color = d3.scale.category20();
+
+      var arc = d3.svg.arc()
+                      .innerRadius(progress.pie.values.innerRadius)
+                      .outerRadius(progress.pie.values.outerRadius);
+
+      // collect names of modules in array
+      var moduleMarks = [];
+      progress.data.forEach(function(value, index, array) {
+        moduleMarks.push(value.overallMark);
+      });
+
+      progress.data.forEach( function(value, index, array) {
+
+        var pie = d3.layout.pie();
+        var data = [value.overallMark];
+        data.push(100 - value.overallMark);
+        console.log(data);
+
+        // Set up groups
+        var arcs = progress.svg.selectAll("g." + value.name)
+          .data(pie(data))
+          .enter()
+          .append("g")
+          .attr("class", "arc")
+          .attr("transform", "translate(" + (( progress.pie.values.w * index ) + progress.pie.values.outerRadius) + ", " + progress.pie.values.outerRadius + ")");
+
+        arcs.append("path")
+            .attr("fill", function(d, i) {
+                return color(i);
+            })
+            .attr("d", arc);
+
+      });
+    },
+
+    showWeights: function() {
+
+      var color = d3.scale.category20();
+      var pieData;
+
+      var arc = d3.svg.arc()
+                      .innerRadius(progress.pie.values.innerRadius)
+                      .outerRadius(progress.pie.values.outerRadius);
+
+      progress.data.forEach( function(value, index, array) {
+
+        var pie = d3.layout.pie();
+        var dataset = value.work.weights;
+
+        // Set up groups
+        var arcs = progress.svg.selectAll("g." + value.name)
+          .data(pie(dataset))
+          .enter()
+          .append("g")
+          .attr("class", "arc")
+          .attr("transform", "translate(" + (( progress.pie.values.w * index ) + progress.pie.values.outerRadius) + ", " + progress.pie.values.outerRadius + ")");
+
+        arcs.append("path")
+            .attr("fill", function(d, i) {
+                return color(i);
+            })
+            .attr("d", arc);
+
+      });
+
+    },
+
+    showModuleNames: function() {
+
+      // collect names of modules in array
+      var moduleNames = [];
+      progress.data.forEach(function(value, index, array) {
+        moduleNames.push(value.name);
+      });
+
+      progress.svg.selectAll('text')
+          .data(moduleNames)
+          .enter()
+          .append('text')
+          .attr("class", "moduleName")
+          .attr("transform", function(d, i) {
+            return "translate(" + (( progress.pie.values.w * i ) + progress.pie.values.outerRadius) + ", " + progress.pie.values.outerRadius + ")"
+          })
+          .attr('text-anchor', "middle")
+          .text(function(d, i) {
+            return d;
+          })
 
     }
 
@@ -53,14 +148,15 @@ progress = function() {
     d3.json( url , function(err, json) {
 
       if( err ) return console.log(err.message);
-      console.log(json);
       progress.data = json;
 
-      //
+      // return json into array form 
 
       arrayify(json);
 
       //
+
+      console.log(json);
 
     });
 
@@ -68,12 +164,9 @@ progress = function() {
 
   function arrayify(json) {
 
-
-    var tmpNames = [], tmpMarks = [], tmpWeights = [];
-
     json.forEach(function(value, index, array) {
 
-        tmpNames = [], tmpMarks = [], tmpWeights = [];
+        var tmpNames = [], tmpMarks = [], tmpWeights = [];
 
         for(workName in value.work)
         {
@@ -99,7 +192,17 @@ progress = function() {
 
     }, this);
 
+  }
 
+  function populateArray(property) {
+    // collect names of modules in array
+      var tmpArray = [];
+      progress.data.forEach(function(value, index, array) {
+        console.log('value.prop', value.property);
+        tmpArray.push(value.property);
+      });
+      console.log('tmpArray', tmpArray);
+      return tmpArray;
   }
 
   function objectExtract(obj, callback) {
