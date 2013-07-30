@@ -3,10 +3,22 @@
 	"work" : {
 		"assessment1" : {
 			"mark" : 58,
-			"weight" : 100
+			"weight" : 25
+		},
+		"assessment2" : {
+			"mark" : 58,
+			"weight" : 25
+		},
+		"assessment3" : {
+			"mark" : 58,
+			"weight" : 25
+		},
+		"assessment4" : {
+			"mark" : 58,
+			"weight" : 25
 		}
 	},
-	"overallMark" : 86
+	"overallMark" : 50
 },
 {
 	"name" : "MATH215",
