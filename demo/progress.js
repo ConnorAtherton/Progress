@@ -27,18 +27,19 @@ progress = function() {
 
   progress.pie = {
 
-    values: {
-      w : 150,
-      h : 150,
+    vars: {
+      width : 750,
+      height : 150,
       outerRadius : 75,
-      innerRadius: 67
+      innerRadius: 63
     },
 
     show: function() {
-      progress.svg  = d3.select( el ).append('svg').attr({ 'width': 960, 'height' : 300});
 
       progress.pie.showOverallMarks();
-      progress.pie.showModuleNames();
+      //progress.pie.showModuleNames();
+
+      // add on click listener to button to transition
 
     },
 
@@ -48,33 +49,28 @@ progress = function() {
 
     showOverallMarks: function() {
 
-
       var color = d3.scale.category20();
-
       var arc = d3.svg.arc()
-                      .innerRadius(progress.pie.values.innerRadius)
-                      .outerRadius(progress.pie.values.outerRadius);
+                  .innerRadius(progress.pie.vars.innerRadius)
+                  .outerRadius(progress.pie.vars.outerRadius);
 
-      // collect names of modules in array
-      var moduleMarks = [];
-      progress.data.forEach(function(value, index, array) {
-        moduleMarks.push(value.overallMark);
-      });
+      // create new svg element for circles
+      var svg = d3.select( el ).append("svg")
+            .attr("width", progress.pie.vars.width)
+            .attr("height", progress.pie.vars.height)
+          .append("g.circles")
+            .attr("transform", "translate(" + progress.pie.vars.width + "," + progress.pie.vars.height + ")");
 
       progress.data.forEach( function(value, index, array) {
 
-        var pie = d3.layout.pie();
+        var pie = d3.layout.pie().sort(null);
         var data = [value.overallMark];
         data.push(100 - value.overallMark);
-        console.log(data);
 
         // Set up groups
-        var arcs = progress.svg.selectAll("g." + value.name)
-          .data(pie(data))
-          .enter()
-          .append("g")
-          .attr("class", "arc")
-          .attr("transform", "translate(" + (( progress.pie.values.w * index ) + progress.pie.values.outerRadius) + ", " + progress.pie.values.outerRadius + ")");
+        var arcs = svg
+          .selectAll('g.circles')
+          .data(pie(data));
 
         arcs.append("path")
             .attr("fill", function(d, i) {
@@ -83,29 +79,38 @@ progress = function() {
             .attr("d", arc);
 
       });
+
     },
 
     showWeights: function() {
 
       var color = d3.scale.category20();
-      var pieData;
+
 
       var arc = d3.svg.arc()
-                      .innerRadius(progress.pie.values.innerRadius)
-                      .outerRadius(progress.pie.values.outerRadius);
+                      .innerRadius(progress.pie.vars.innerRadius)
+                      .outerRadius(progress.pie.vars.outerRadius);
 
       progress.data.forEach( function(value, index, array) {
 
         var pie = d3.layout.pie();
         var dataset = value.work.weights;
 
+        var svgContainer = d3.select( el )
+                              .append('svg')
+                              .attr({ 
+                                  'width': 150, 
+                                  'height' : 150,
+                                  'class' : 'pie ' + value.name
+                              });
+
         // Set up groups
-        var arcs = progress.svg.selectAll("g." + value.name)
+        var arcs = svgContainer.selectAll("g." + value.name)
           .data(pie(dataset))
           .enter()
           .append("g")
           .attr("class", "arc")
-          .attr("transform", "translate(" + (( progress.pie.values.w * index ) + progress.pie.values.outerRadius) + ", " + progress.pie.values.outerRadius + ")");
+          .attr("transform", "translate(" + 75 + ", " + 75 + ")");
 
         arcs.append("path")
             .attr("fill", function(d, i) {
@@ -125,18 +130,43 @@ progress = function() {
         moduleNames.push(value.name);
       });
 
-      progress.svg.selectAll('text')
+      progress.pie.svg.selectAll('text')
           .data(moduleNames)
           .enter()
           .append('text')
           .attr("class", "moduleName")
           .attr("transform", function(d, i) {
-            return "translate(" + (( progress.pie.values.w * i ) + progress.pie.values.outerRadius) + ", " + progress.pie.values.outerRadius + ")"
+            return "translate(" + (( progress.pie.vars.w * i ) + progress.pie.vars.outerRadius) + ", " + progress.pie.values.outerRadius + ")"
           })
           .attr('text-anchor', "middle")
+          .attr('alignment-baseline', "middle")
           .text(function(d, i) {
             return d;
           })
+
+    }
+
+  }
+
+  progress.scatter = {
+
+    show: function() {
+
+    },
+
+    hide: function() {
+
+    }
+
+  }
+
+  progress.force = {
+
+    show: function() {
+
+    },
+
+    hide: function() {
 
     }
 
@@ -148,15 +178,9 @@ progress = function() {
     d3.json( url , function(err, json) {
 
       if( err ) return console.log(err.message);
-      progress.data = json;
 
       // return json into array form 
-
-      arrayify(json);
-
-      //
-
-      console.log(json);
+      progress.data = arrayify(json);
 
     });
 
@@ -164,7 +188,7 @@ progress = function() {
 
   function arrayify(json) {
 
-    json.forEach(function(value, index, array) {
+    json.forEach( function(value, index, array) {
 
         var tmpNames = [], tmpMarks = [], tmpWeights = [];
 
@@ -191,6 +215,8 @@ progress = function() {
         value.work.marks = tmpMarks;
 
     }, this);
+
+    return json;
 
   }
 
