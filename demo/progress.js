@@ -31,21 +31,57 @@ progress = function() {
       width : 750,
       height : 150,
       outerRadius : 75,
-      innerRadius: 63
+      innerRadius: 63,
+      pieEl: document.createElement('div'),
+      pieId: 'pieCharts',
+      path: null,
+      svg: null
     },
 
     show: function() {
 
-      progress.pie.showOverallMarks();
-      //progress.pie.showModuleNames();
-
       // add on click listener to button to transition
+      var clickTarget = document.createElement('div');
+      clickTarget.setAttribute('id', 'pieClick');
+      clickTarget.innerHTML = "Click me!";
+      el.appendChild( clickTarget );
+
+      // create new dom element and add to element
+      progress.pie.vars.pieEl.setAttribute('id', progress.pie.vars.pieId);
+      el.appendChild( progress.pie.vars.pieEl );
+
+      progress.pie.showOverallMarks();
+      // progress.pie.showWeights();
 
     },
 
-    hide : function() {
+    hide: function() {
 
     },
+
+    transfer: function() {
+      var color = d3.scale.category20();
+      var arc = d3.svg.arc()
+                  .innerRadius(progress.pie.vars.innerRadius)
+                  .outerRadius(progress.pie.vars.outerRadius);
+
+      var pie = d3.layout.pie();
+
+      var pieData = [];
+      progress.data.forEach( function(value, index, array) {
+        pieData.push(value.work.weights);
+      });
+
+      console.log(pieData);
+
+      progress.pie.vars.path = progress.pie.vars.path.data(pieData)
+
+      progress.pie.vars.path = progress.pie.vars.svg.selectAll("path")
+        .data(function(d, i){ console.log(d);return pie(d) })
+        .enter()
+        .append("path");
+
+      },
 
     showOverallMarks: function() {
 
@@ -54,39 +90,38 @@ progress = function() {
                   .innerRadius(progress.pie.vars.innerRadius)
                   .outerRadius(progress.pie.vars.outerRadius);
 
-      // create new svg element for circles
-      var svg = d3.select( el ).append("svg")
-            .attr("width", progress.pie.vars.width)
-            .attr("height", progress.pie.vars.height)
-          .append("g.circles")
-            .attr("transform", "translate(" + progress.pie.vars.width + "," + progress.pie.vars.height + ")");
+      var pie = d3.layout.pie().sort(null);
 
+      var pieData = [];
       progress.data.forEach( function(value, index, array) {
-
-        var pie = d3.layout.pie().sort(null);
-        var data = [value.overallMark];
-        data.push(100 - value.overallMark);
-
-        // Set up groups
-        var arcs = svg
-          .selectAll('g.circles')
-          .data(pie(data));
-
-        arcs.append("path")
-            .attr("fill", function(d, i) {
-                return color(i);
-            })
-            .attr("d", arc);
-
+        var tmpArray = [value.overallMark];
+        tmpArray.push(100 - value.overallMark);
+        pieData.push(tmpArray);
       });
+
+      console.log(pieData);
+
+      progress.pie.vars.svg = d3.select( progress.pie.vars.pieEl ).selectAll("svg")
+              .data(pieData)
+              .enter()
+              .append("svg")
+              .attr("width", 150)
+              .attr("height", 150)
+              .attr("transform", "translate(" + 75 + ", " + 75 + ")")
+              .each(function(d) { this._current = d; }); // store the initial angles;
+
+      progress.pie.vars.path = progress.pie.vars.svg.selectAll("path")
+        .data(function(d, i){ return pie(d) })
+        .enter().append("path")
+          .attr("fill", function(d, i) { return color(i); })
+          .attr("transform", "translate(" + 75 + ", " + 75 + ")")
+          .attr("d", arc);
 
     },
 
     showWeights: function() {
 
       var color = d3.scale.category20();
-
-
       var arc = d3.svg.arc()
                       .innerRadius(progress.pie.vars.innerRadius)
                       .outerRadius(progress.pie.vars.outerRadius);
@@ -94,19 +129,13 @@ progress = function() {
       progress.data.forEach( function(value, index, array) {
 
         var pie = d3.layout.pie();
-        var dataset = value.work.weights;
+        var data = value.work.weights;
 
-        var svgContainer = d3.select( el )
-                              .append('svg')
-                              .attr({ 
-                                  'width': 150, 
-                                  'height' : 150,
-                                  'class' : 'pie ' + value.name
-                              });
+        var svgContainer = d3.select( progress.pie.vars.pieEl );
 
         // Set up groups
         var arcs = svgContainer.selectAll("g." + value.name)
-          .data(pie(dataset))
+          .data(pie(data))
           .enter()
           .append("g")
           .attr("class", "arc")
