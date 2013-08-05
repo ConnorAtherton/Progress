@@ -8,6 +8,8 @@ body, html
 	margin: 0;
 	padding: 0;
 	height: auto;
+	font-family: "Source Sans Pro", serif;
+	font-weight: 400;
 }
 
 .row 

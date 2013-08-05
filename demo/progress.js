@@ -44,7 +44,7 @@ progress = function() {
       var clickTarget = document.createElement('div');
       clickTarget.setAttribute('id', 'pieClick');
       clickTarget.innerHTML = "Click me!";
-      el.appendChild( clickTarget );
+      progress.pie.vars.pieEl.appendChild( clickTarget );
 
       // create new dom element and add to element
       progress.pie.vars.pieEl.setAttribute('id', progress.pie.vars.pieId);
@@ -52,36 +52,13 @@ progress = function() {
 
       progress.pie.showOverallMarks();
       // progress.pie.showWeights();
+      progress.pie.showModuleNames();
 
     },
 
     hide: function() {
 
     },
-
-    transfer: function() {
-      var color = d3.scale.category20();
-      var arc = d3.svg.arc()
-                  .innerRadius(progress.pie.vars.innerRadius)
-                  .outerRadius(progress.pie.vars.outerRadius);
-
-      var pie = d3.layout.pie();
-
-      var pieData = [];
-      progress.data.forEach( function(value, index, array) {
-        pieData.push(value.work.weights);
-      });
-
-      console.log(pieData);
-
-      progress.pie.vars.path = progress.pie.vars.path.data(pieData)
-
-      progress.pie.vars.path = progress.pie.vars.svg.selectAll("path")
-        .data(function(d, i){ console.log(d);return pie(d) })
-        .enter()
-        .append("path");
-
-      },
 
     showOverallMarks: function() {
 
@@ -98,24 +75,31 @@ progress = function() {
         tmpArray.push(100 - value.overallMark);
         pieData.push(tmpArray);
       });
+      var tweenPie = function (b) {
+         b.innerRadius = 0;
+         var i = d3.interpolate({startAngle: 0, endAngle: 0}, b);
+         return function(t) {
+           return arc(i(t));
+         };
+      }
 
-      console.log(pieData);
-
-      progress.pie.vars.svg = d3.select( progress.pie.vars.pieEl ).selectAll("svg")
+      var svg = d3.select( progress.pie.vars.pieEl ).selectAll("svg")
               .data(pieData)
               .enter()
               .append("svg")
-              .attr("width", 150)
-              .attr("height", 150)
-              .attr("transform", "translate(" + 75 + ", " + 75 + ")")
-              .each(function(d) { this._current = d; }); // store the initial angles;
+                .attr("width", 150)
+                .attr("height", 150);
 
-      progress.pie.vars.path = progress.pie.vars.svg.selectAll("path")
+      var paths = svg.selectAll("path")
         .data(function(d, i){ return pie(d) })
         .enter().append("path")
           .attr("fill", function(d, i) { return color(i); })
-          .attr("transform", "translate(" + 75 + ", " + 75 + ")")
-          .attr("d", arc);
+          .attr("transform", "translate(" + 75 + ", " + 75 + ")");
+
+      paths.transition()
+          .ease("sin")
+           .duration(500)
+           .attrTween("d", tweenPie);
 
     },
 
@@ -123,31 +107,41 @@ progress = function() {
 
       var color = d3.scale.category20();
       var arc = d3.svg.arc()
-                      .innerRadius(progress.pie.vars.innerRadius)
-                      .outerRadius(progress.pie.vars.outerRadius);
+                  .innerRadius(progress.pie.vars.innerRadius)
+                  .outerRadius(progress.pie.vars.outerRadius);
 
-      progress.data.forEach( function(value, index, array) {
+      var pie = d3.layout.pie().sort(null);
 
-        var pie = d3.layout.pie();
-        var data = value.work.weights;
+      var pieData = [[25, 25, 50], [30, 30, 40], [70, 10, 10, 10], [95, 4, 1], [80, 15, 5]];
+      // progress.data.forEach( function(value, index, array) {
+      //   var tmpArray = [value.work.weights];
+      //   pieData.push(tmpArray);
+      // });
+      var tweenPie = function (b) {
+         b.innerRadius = 0;
+         var i = d3.interpolate({startAngle: 0, endAngle: 0}, b);
+         return function(t) {
+           return arc(i(t));
+         };
+      }
 
-        var svgContainer = d3.select( progress.pie.vars.pieEl );
+      var svg = d3.select( progress.pie.vars.pieEl ).selectAll("svg")
+              .data(pieData)
+              .enter()
+              .append("svg")
+                .attr("width", 150)
+                .attr("height", 150);
 
-        // Set up groups
-        var arcs = svgContainer.selectAll("g." + value.name)
-          .data(pie(data))
-          .enter()
-          .append("g")
-          .attr("class", "arc")
+      var paths = svg.selectAll("path")
+        .data(function(d, i){ return pie(d) })
+        .enter().append("path")
+          .attr("fill", function(d, i) { return color(i); })
           .attr("transform", "translate(" + 75 + ", " + 75 + ")");
 
-        arcs.append("path")
-            .attr("fill", function(d, i) {
-                return color(i);
-            })
-            .attr("d", arc);
-
-      });
+      paths.transition()
+          .ease("sin")
+           .duration(500)
+           .attrTween("d", tweenPie);
 
     },
 
@@ -159,13 +153,15 @@ progress = function() {
         moduleNames.push(value.name);
       });
 
-      progress.pie.svg.selectAll('text')
+      var svg = d3.select( progress.pie.vars.pieEl ).selectAll("svg");
+
+      var text = svg.selectAll('text')
           .data(moduleNames)
           .enter()
-          .append('text')
-          .attr("class", "moduleName")
-          .attr("transform", function(d, i) {
-            return "translate(" + (( progress.pie.vars.w * i ) + progress.pie.vars.outerRadius) + ", " + progress.pie.values.outerRadius + ")"
+            .append('text')
+            .attr("class", "moduleName")
+            .attr("transform", function(d, i) {
+              return "translate(" + (( progress.pie.vars.width * i ) + progress.pie.vars.outerRadius) + ", " + progress.pie.vars.outerRadius + ")"
           })
           .attr('text-anchor', "middle")
           .attr('alignment-baseline', "middle")
@@ -258,16 +254,6 @@ progress = function() {
       });
       console.log('tmpArray', tmpArray);
       return tmpArray;
-  }
-
-  function objectExtract(obj, callback) {
-
-    for (i in obj) {
-            value = callback.call(obj[i], i, obj[i]);
-
-            if (value === false) break;
-
-        }
   }
 
   return progress;
