@@ -28,6 +28,7 @@ progress = function() {
   progress.pie = {
 
     vars: {
+      drawn: false,
       width : 750,
       height : 150,
       outerRadius : 75,
@@ -39,20 +40,28 @@ progress = function() {
     },
 
     show: function() {
+        // only draw the dom elements once
+        if(progress.pie.vars.drawn === true) return;
+ 
+        // add on click listener to button to transition
+        var clickTarget = document.createElement('div');
+        clickTarget.setAttribute('id', 'pieClick');
+        clickTarget.setAttribute('data-update', 'weights');
+        clickTarget.innerHTML = "Click me!";
+        progress.pie.vars.pieEl.appendChild( clickTarget );
 
-      // add on click listener to button to transition
-      var clickTarget = document.createElement('div');
-      clickTarget.setAttribute('id', 'pieClick');
-      clickTarget.innerHTML = "Click me!";
-      progress.pie.vars.pieEl.appendChild( clickTarget );
+        d3.select(clickTarget).on("click", function() {
+          this.getAttribute("data-update") === "weights" ? progress.pie.updateWeights(this) : progress.pie.updateMarks(this);
+        });
 
-      // create new dom element and add to element
-      progress.pie.vars.pieEl.setAttribute('id', progress.pie.vars.pieId);
-      el.appendChild( progress.pie.vars.pieEl );
+        // create new dom element and add to element
+        progress.pie.vars.pieEl.setAttribute('id', progress.pie.vars.pieId);
+        el.appendChild( progress.pie.vars.pieEl );
 
-      //progress.pie.showOverallMarks();
-      progress.pie.showWeights();
-      progress.pie.showModuleNames();
+        progress.pie.showOverallMarks();
+        progress.pie.showModuleNames();
+
+        progress.pie.vars.drawn = true;
 
     },
 
@@ -60,12 +69,47 @@ progress = function() {
 
     },
 
-    showOverallMarks: function() {
-
-      var color = d3.scale.category20();
+    tweenPie: function(b) {
       var arc = d3.svg.arc()
                   .innerRadius(progress.pie.vars.innerRadius)
                   .outerRadius(progress.pie.vars.outerRadius);
+        b.innerRadius = 0;
+         var i = d3.interpolate({startAngle: 0, endAngle: 0}, b);
+         //this._current = i(0);
+         return function(t) {
+           return arc(i(t));
+      };
+    },
+
+    updateWeights: function(that) {
+
+      var color = d3.scale.category20c();
+      var pie = d3.layout.pie().sort(null);
+      var pieData = [[25, 25, 50], [30, 30, 40], [70, 10, 10, 10], [95, 4, 1], [80, 15, 5]];
+
+      // change attribute to overall
+      that.setAttribute("data-update", "overall")
+
+      progress.pie.vars.svg = progress.pie.vars.svg
+              .data(pieData);
+
+      progress.pie.vars.paths = progress.pie.vars.paths
+          .data(function(d, i){ return pie(d) });
+
+      progress.pie.vars.paths.exit().remove();
+      progress.pie.vars.paths.enter().append("path")
+      .attr("fill", function(d, i) { return color(i); })
+        .attr("transform", "translate(" + 75 + ", " + 75 + ")");
+
+      progress.pie.vars.paths.transition()
+          .ease("sin")
+           .duration(250)
+           .attrTween("d", progress.pie.tweenPie)
+           .each(function(d) { this._current = d; }); // store the angles;
+
+    },
+
+    updateMarks: function(that) {
 
       var pie = d3.layout.pie().sort(null);
 
@@ -75,13 +119,40 @@ progress = function() {
         tmpArray.push(100 - value.overallMark);
         pieData.push(tmpArray);
       });
-      var tweenPie = function (b) {
-         b.innerRadius = 0;
-         var i = d3.interpolate({startAngle: 0, endAngle: 0}, b);
-         return function(t) {
-           return arc(i(t));
-         };
-      }
+
+      // change attribute to overall
+      that.setAttribute("data-update", "weights");
+
+      progress.pie.vars.svg = progress.pie.vars.svg
+          .data(pieData);
+
+      progress.pie.vars.paths = progress.pie.vars.paths
+          .data(function(d, i){ return pie(d) });
+
+      // handle exit and enter selections
+      progress.pie.vars.paths.exit().remove();
+      progress.pie.vars.paths.enter().append("path")
+        .attr("fill", function(d, i) { if(i % 2){ return "#f7505a"; }else{ return "#f34400"; } });
+
+      progress.pie.vars.paths.transition()
+          .ease("sin")
+           .duration(250)
+           .attrTween("d", progress.pie.tweenPie)
+           .each(function(d) { this._current = d; }); // store the angles;
+
+    },
+
+    showOverallMarks: function() {
+
+      var color = d3.scale.category20();
+      var pie = d3.layout.pie().sort(null);
+
+      var pieData = [];
+      progress.data.forEach( function(value, index, array) {
+        var tmpArray = [value.overallMark];
+        tmpArray.push(100 - value.overallMark);
+        pieData.push(tmpArray);
+      });
 
       progress.pie.vars.svg = d3.select( progress.pie.vars.pieEl ).selectAll("svg")
               .data(pieData)
@@ -93,13 +164,14 @@ progress = function() {
       progress.pie.vars.paths = progress.pie.vars.svg.selectAll("path")
         .data(function(d, i){ return pie(d) })
         .enter().append("path")
-          .attr("fill", function(d, i) { return color(i); })
+          .attr("fill", function(d, i) { if(i % 2 === 0 ){ return "#f7505a"; }else{ return "#e8e8e8"; } })
           .attr("transform", "translate(" + 75 + ", " + 75 + ")");
 
-      paths.transition()
+      progress.pie.vars.paths.transition()
           .ease("sin")
-           .duration(500)
-           .attrTween("d", tweenPie);
+           .duration(5000)
+           .attrTween("d", progress.pie.tweenPie)
+           .each(function(d) { this._current = d; }); // store the angles;
 
     },
 
@@ -117,31 +189,25 @@ progress = function() {
       //   var tmpArray = [value.work.weights];
       //   pieData.push(tmpArray);
       // });
-      var tweenPie = function (b) {
-         b.innerRadius = 0;
-         var i = d3.interpolate({startAngle: 0, endAngle: 0}, b);
-         return function(t) {
-           return arc(i(t));
-         };
-      }
 
-      var svg = d3.select( progress.pie.vars.pieEl ).selectAll("svg")
+      progress.pie.vars.svg = d3.select( progress.pie.vars.pieEl ).selectAll("svg")
               .data(pieData)
               .enter()
               .append("svg")
                 .attr("width", 150)
                 .attr("height", 150);
 
-      var paths = svg.selectAll("path")
+      progress.pie.vars.paths = progress.pie.vars.svg.selectAll("path")
         .data(function(d, i){ return pie(d) })
         .enter().append("path")
           .attr("fill", function(d, i) { return color(i); })
           .attr("transform", "translate(" + 75 + ", " + 75 + ")");
 
-      paths.transition()
+      progress.pie.vars.paths.transition()
           .ease("sin")
            .duration(500)
-           .attrTween("d", tweenPie);
+           .attrTween("d", progress.pie.tweenPie)
+           .each(function(d) { this._current = d; }); // store the angles;
 
     },
 

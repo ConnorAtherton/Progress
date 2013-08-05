@@ -1,0 +1,10 @@
+{
+  "name": "Progress Demo",
+  "version": "0.0.1",
+  "ignore": [
+    "**/.*"
+  ],
+  "dependencies": {
+    "foundation": "~4.3.1"
+  }
+}
