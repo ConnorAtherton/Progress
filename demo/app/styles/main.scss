@@ -1,0 +1,23 @@
+// include compass mixins
+@import "compass/reset";
+@import "compass/css3";
+
+// include foundation
+@import "foundation/scss/foundation.scss";
+
+// buttons partial
+@import "buttons.scss";
+
+// import global partial
+@import "global.scss";
+
+#main 
+{
+	background-color: white;
+	margin: 50px auto;
+	padding: 40px;
+
+	@include border-radius(3px);
+	@include box-shadow(rgba(0, 0, 0, 0.4) 0px 2px 6px);
+
+}

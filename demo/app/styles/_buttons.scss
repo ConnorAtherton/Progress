@@ -1,0 +1,25 @@
+#pieClick
+{	
+	height: 60px;
+	line-height: 60px;
+	margin: 25px auto;
+	width: 150px;
+	color: white;
+	text-align: center;
+	display: block;
+	-webkit-transition: all 0.2s;
+	-moz-transition: all 0.2s;
+	transition: all 0.2s;
+	background-color: #f7505a;
+	position: relative;
+
+	@include box-shadow(#ab3c3c 0 5px);
+	@include border-radius(3px);
+}
+
+#pieClick:hover
+{
+	top: 2px;
+	box-shadow: 0 3px #ab3c3c;
+	cursor: pointer;
+}
