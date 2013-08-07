@@ -36,12 +36,13 @@ progress = function() {
       pieEl: document.createElement('div'),
       pieId: 'pieCharts',
       paths: null,
-      svg: null
+      svg: null,
+      startValue: 3
     },
 
     show: function() {
         // only draw the dom elements once
-        if(progress.pie.vars.drawn === true) return;
+        if(progress.pie.vars.drawn) return;
  
         // add on click listener to button to transition
         var clickTarget = document.createElement('div');
@@ -73,8 +74,11 @@ progress = function() {
       var arc = d3.svg.arc()
                   .innerRadius(progress.pie.vars.innerRadius)
                   .outerRadius(progress.pie.vars.outerRadius);
-        b.innerRadius = 0;
-         var i = d3.interpolate(this._current,  b);
+
+        console.log(b)
+         b.innerRadius = 0;
+         var startValue = {startAngle: 6.28, endAngle: 0};
+         var i = d3.interpolate((this._current || startValue),  b);
          this._current = i(0);
          return function(t) {
            return arc(i(t));
@@ -105,7 +109,7 @@ progress = function() {
           .ease("sin")
            .duration(250)
            .attrTween("d", progress.pie.tweenPie)
-           .each(function(d) { this._current = d; }); // store the angles;
+           // .each(function(d) { this._current = d; }); // store the angles;
 
     },
 
@@ -137,8 +141,7 @@ progress = function() {
       progress.pie.vars.paths.transition()
           .ease("sin")
            .duration(250)
-           .attrTween("d", progress.pie.tweenPie)
-           .each(function(d) { this._current = d; }); // store the angles;
+           .attrTween("d", progress.pie.tweenPie);
 
     },
 
@@ -272,6 +275,8 @@ progress = function() {
 
       // return json into array form 
       progress.data = arrayify(json);
+      // show pie charts
+      progress.pie.show();
 
     });
 

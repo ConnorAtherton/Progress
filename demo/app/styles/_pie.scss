@@ -1,4 +1,24 @@
+/**
+*
+* pie charts container styles
+*
+**/
+
 #pieCharts
 {
-	width: 100%;
+	width: 680px;
+	margin: 0 auto;
 }
+
+/**
+*
+* individual pie charts styles
+*
+**/
+
+#pieCharts > svg
+{
+	@include box-sizing(content-box);
+	padding
+}
+
