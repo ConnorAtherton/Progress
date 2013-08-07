@@ -178,42 +178,6 @@ progress = function() {
 
     },
 
-    showWeights: function() {
-
-      var color = d3.scale.category20();
-      var arc = d3.svg.arc()
-                  .innerRadius(progress.pie.vars.innerRadius)
-                  .outerRadius(progress.pie.vars.outerRadius);
-
-      var pie = d3.layout.pie().sort(null);
-
-      var pieData = [[25, 25, 50], [30, 30, 40], [70, 10, 10, 10], [95, 4, 1], [80, 15, 5]];
-      // progress.data.forEach( function(value, index, array) {
-      //   var tmpArray = [value.work.weights];
-      //   pieData.push(tmpArray);
-      // });
-
-      progress.pie.vars.svg = d3.select( progress.pie.vars.pieEl ).selectAll("svg")
-              .data(pieData)
-              .enter()
-              .append("svg")
-                .attr("width", 150)
-                .attr("height", 150);
-
-      progress.pie.vars.paths = progress.pie.vars.svg.selectAll("path")
-        .data(function(d, i){ return pie(d) })
-        .enter().append("path")
-          .attr("fill", function(d, i) { return color(i); })
-          .attr("transform", "translate(" + 75 + ", " + 75 + ")");
-
-      progress.pie.vars.paths.transition()
-          .ease("sin")
-           .duration(500)
-           .attrTween("d", progress.pie.tweenPie)
-           .each(function(d) { this._current = d; }); // store the angles;
-
-    },
-
     showModuleNames: function() {
 
       // collect names of modules in array
