@@ -43,8 +43,9 @@ progress = function() {
 
     vars: {
       drawn: false,
-      width : 750,
-      height : 150,
+      svgWidth : 750,
+      pieWidth: 184,
+      pieHeight : 150,
       outerRadius : 75,
       innerRadius: 70,
       pieEl: document.createElement('div'),
@@ -145,7 +146,7 @@ progress = function() {
       progress.pie.vars.paths.exit().remove();
       progress.pie.vars.paths.enter().append("path")
       .attr("fill", function(d, i) { return color(i); })
-        .attr("transform", "translate(" + 75 + ", " + 75 + ")");
+        .attr("transform", "translate(" + 92 + ", " + 75 + ")");
 
       progress.pie.vars.paths.transition()
           .ease("sin")
@@ -202,14 +203,14 @@ progress = function() {
               .data(pieData)
               .enter()
               .append("svg")
-                .attr("width", progress.pie.vars.height)
+                .attr("width", 184)
                 .attr("height", progress.pie.vars.height);
 
       progress.pie.vars.paths = progress.pie.vars.svg.selectAll("path")
         .data(function(d, i){ return pie(d) })
         .enter().append("path")
           .attr("fill", function(d, i) { if(i % 2 === 0 ){ return "#f7505a"; }else{ return "#e8e8e8"; } })
-          .attr("transform", "translate(" + 75 + ", " + 75 + ")");
+          .attr("transform", "translate(" + 92 + ", " + 75 + ")");
 
       progress.pie.vars.paths.transition()
           .ease("linear")
@@ -229,61 +230,29 @@ progress = function() {
       });
 
       var svgns = "http://www.w3.org/2000/svg"; // SVG namespace
-
-      var textNode;
-
+      var textNode; // node for module name
       var svgs = progress.pie.vars.pieEl.getElementsByTagName('svg');
-        // textNode = document.createTextNode("value");
-        // textEl.appendChild(textNode);
-
-        // var svgArray = toArray(svgs);
-
-        // svgArray.forEach( function(value, index, array) {
-        //     console.log(value)
-        //     value.appendChild(textEl)
-        // }, this);
-
 
       var i = 0;
       while(i < moduleNames.length) {
 
+        // create a new text element and append a text node inside it
+        // with the correct module name
         var textEl = document.createElementNS(svgns, 'text'),
         textNode = document.createTextNode( moduleNames[i] );
         textEl.appendChild(textNode);
 
-        textEl.setAttribute("transform", "translate(" + 75 + ", " + 75 + ")");
+        // set attributes to place it in the middle of the pie charts
+        textEl.setAttribute("transform", "translate(" + 92 + ", " + 75 + ")");
         textEl.setAttribute('text-anchor', "middle");
         textEl.setAttribute('alignment-baseline', "middle");
         textEl.classList.add("moduleName");
-      
+
+        // finally append it to the svg element
         svgs[i].appendChild(textEl);
-        // var textNode = document.createTextNode( moduleNames[i] );
-        // textEl.appendChild(textNode);
-        // svgs[i].appendChild(textEl);
-        // console.log(i);
+    
         i++;
       }
-
-      //svgs[i].appendChild(textEl);
-
-
-      // progress.pie.vars.text = progress.pie.vars.svg.selectAll('text')
-      //     .data(moduleNames);
-
-      // progress.pie.vars.text
-      //   .enter()
-      //       .append('svg:text')
-      //       .attr("class", "moduleName")
-      //       .attr("transform", function(d, i) {
-      //         return "translate(" + 10 * i + ", " + progress.pie.vars.outerRadius + ")"
-      //     })
-      //     .attr('text-anchor', "middle")
-      //     .attr('alignment-baseline', "middle")
-      //     .text(function(d, i) {
-      //       return d;
-      //     })
-      //     <text class="moduleName" transform="translate(0, 75)" 
-      //       text-anchor="middle" alignment-baseline="middle">MATH210</text>
 
     }
 
