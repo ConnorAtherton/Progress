@@ -203,14 +203,14 @@ progress = function() {
               .data(pieData)
               .enter()
               .append("svg")
-                .attr("width", 184)
-                .attr("height", progress.pie.vars.height);
+                .attr("width", progress.pie.vars.pieWidth)
+                .attr("height", progress.pie.vars.pieHeight);
 
       progress.pie.vars.paths = progress.pie.vars.svg.selectAll("path")
         .data(function(d, i){ return pie(d) })
         .enter().append("path")
           .attr("fill", function(d, i) { if(i % 2 === 0 ){ return "#f7505a"; }else{ return "#e8e8e8"; } })
-          .attr("transform", "translate(" + 92 + ", " + 75 + ")");
+          .attr("transform", "translate(" + (progress.pie.vars.pieWidth / 2) + ", " + (progress.pie.vars.pieHeight / 2) + ")");
 
       progress.pie.vars.paths.transition()
           .ease("linear")
