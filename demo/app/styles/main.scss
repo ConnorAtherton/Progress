@@ -2,11 +2,16 @@
 @import "compass/reset";
 @import "compass/css3";
 
+// include normalize scss
+// include foundation
+@import "normalize-scss/_normalize.scss";
+
 // include foundation
 @import "foundation/scss/foundation.scss";
 
-// buttons partial
+// partials
 @import "buttons.scss";
+@import "pie.scss";
 
 // import global partial
 @import "global.scss";

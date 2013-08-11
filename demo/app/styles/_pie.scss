@@ -4,12 +4,12 @@
 *
 **/
 
-#pieCharts
+#progressPie
 {
-	width: 680px;
+	width: 920px;
 	margin: 0 auto;
 	height: auto;
-	max-height: 450px;
+	position: relative;
 }
 
 /**
@@ -18,9 +18,74 @@
 *
 **/
 
-#pieCharts > svg
+// colour scheme for overall marks pie
+
+.progressPieMarks path:nth-child(1)
 {
-	@include box-sizing(content-box);
-	padding: 20px;
+	fill: #f7505a;
 }
+.progressPieMarks path:nth-child(2)
+{
+	fill: #e1e1e1;
+	pointer-events: none;
+}
+
+// colour scheme for overall marks pie
+
+.progressPieWeights path:nth-child(1)
+{
+	fill: blue;
+}
+
+.progressPieWeights path:nth-child(2)
+{
+	fill: green;
+}
+
+.progressPieWeights path:nth-child(3)
+{
+	fill: yellow;
+}
+
+.progressPieWeights path:nth-child(4)
+{
+	fill: red;
+}
+
+.progressPieWeights path:nth-child(5)
+{
+	fill: yellow;
+}
+
+/**
+*
+* Pie chart tooltop styles
+*
+**/
+
+#pieTooltip
+{
+	width: 100px;
+	font-size: 12px;
+	padding: 10px;
+	background-color: rgba(0, 0, 0, 0.6);
+	color: white;
+	text-align: center; 
+
+	@include border-radius(3px);
+}
+
+#pieTooltip:before
+{	
+	content: ' ';
+	position: absolute;
+	width: 0;
+	height: 0;
+	left: 42px;
+	top: -14px;
+	border: 7px solid;
+	border-color: transparent transparent rgba(0, 0, 0, 0.6) transparent;
+}
+
+
 

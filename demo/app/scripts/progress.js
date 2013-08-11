@@ -43,17 +43,20 @@ progress = function() {
 
     vars: {
       drawn: false,
+      status: 'marks',
       svgWidth : 750,
       pieWidth: 184,
-      pieHeight : 150,
+      pieHeight : 180,
       outerRadius : 75,
-      innerRadius: 70,
+      innerRadius: 68,
       pieEl: document.createElement('div'),
-      pieId: 'pieCharts',
       paths: null,
       svg: null,
       text: null,
-      startValue: {startAngle: 6.28, endAngle: 0}
+      clickTarget: null,
+      tooltip: null,
+      startValue: {startAngle: 6.28, endAngle: 0},
+      colors: ["#f7505a", "#e9e9e9", "#0e83cd", "#2ecc71", "#9e54bd", "#4593e3"]
     },
 
     /**
@@ -70,17 +73,18 @@ progress = function() {
  
         /**
         *
-        * Create a new DOM element and give it a some custom
+        * Create a new DOM element that will be the click trigger and give it a 
+        * some custom
         * attributes so it can be targeted within the script and
         * in CSS.
         *
         **/
         
-        var clickTarget = document.createElement('div');
-        clickTarget.setAttribute('id', 'pieClick');
-        clickTarget.setAttribute('data-update', 'weights');
-        clickTarget.innerHTML = "Show Weights";
-        progress.pie.vars.pieEl.appendChild( clickTarget );
+        progress.pie.vars.clickTarget = document.createElement('div');
+        progress.pie.vars.clickTarget.setAttribute('id', 'pieClick');
+        progress.pie.vars.clickTarget.setAttribute('data-update', 'weights');
+        progress.pie.vars.clickTarget.innerHTML = "Show Weights";
+        progress.pie.vars.pieEl.appendChild( progress.pie.vars.clickTarget );
 
         /**
         *
@@ -90,23 +94,90 @@ progress = function() {
         *
         **/
         
-        d3.select(clickTarget).on("click", function() {
-          this.getAttribute("data-update") === "weights" ? progress.pie.updateWeights(this) : progress.pie.updateMarks(this);
+        d3.select(progress.pie.vars.clickTarget).on("click", function() {
+          progress.pie.vars.status === "marks" ? progress.pie.updateWeights(this) : progress.pie.updateMarks(this);
         });
 
+        d3.select("path").on("mouseover", function(d, i) {
+          console.log(d);
+
+        })
+
         // Append created DOM element to the element used for the plugin.
-        progress.pie.vars.pieEl.setAttribute('id', progress.pie.vars.pieId);
+        progress.pie.vars.pieEl.setAttribute('id', "progressPie");
+        progress.pie.vars.pieEl.classList.add("progressPieMarks");
         el.appendChild( progress.pie.vars.pieEl );
 
         // Show the initial state of the pie charts and add the module names.
         progress.pie.showOverallMarks();
         progress.pie.showModuleNames();
 
+        // create the tooltip, hide it and append it to the dom
+        progress.pie.vars.tooltip = document.createElement('div');
+        progress.pie.vars.tooltip.setAttribute('id', 'pieTooltip');
+        progress.pie.vars.tooltip.style.display = 'none';
+        document.body.appendChild( progress.pie.vars.tooltip );
+
+        // add an event listener to each path
+        d3.selectAll("path").on('mouseover', function(d, i) {
+          // stop event propogation
+          //d3.event.stopPropogation();
+          d3.event.cancelBubble = 'true';
+
+          progress.pie.showTooltip(d, this);
+        });
+
+        // add an event listener to each path
+        d3.selectAll("path").on('mouseout', function(d, i) {
+            progress.pie.removeTooltip();
+        });
+
         progress.pie.vars.drawn = true;
 
     },
 
     hide: function() {
+      console.log("hide the pie charts");
+    },
+
+    showTooltip: function(data, that) {
+
+      // grab the tolltip position relative to the client window
+      // var xPos = d3.event.clientX - d3.event.offsetX, yPos = d3.event.clientY;
+      var xPos = d3.event.x - (d3.event.offsetX / 2);
+      var yPos = d3.event.y - 40;
+
+      // add initial inline styles
+      progress.pie.vars.tooltip.style.position = 'absolute';
+      progress.pie.vars.tooltip.style.left = (xPos) + 'px';
+      progress.pie.vars.tooltip.style.top = (yPos) + 'px';
+
+      // change the inner html depending on the data
+      if(progress.pie.vars.status === 'marks')
+      {
+        progress.pie.vars.tooltip.innerHTML = 'Overall Mark: ' + data.value + '%';
+      }
+      else
+      {
+        progress.pie.vars.tooltip.innerHTML = 'Module weight: ' + data.value + '%';
+      }
+
+      // show the tooltip on the page
+      progress.pie.vars.tooltip.style.display = 'inline';
+
+    },
+
+    removeTooltip: function() {
+
+      // hide the tooltip from the page
+      progress.pie.vars.tooltip.style.display = 'none';
+
+      // reset the tooltip coords
+      progress.pie.vars.tooltip.style.left = 0;
+      progress.pie.vars.tooltip.style.top = 0;
+
+      // reset d3.event so we can register other events
+      d3.event = " ";
 
     },
 
@@ -130,12 +201,15 @@ progress = function() {
     
     updateWeights: function(that) {
 
-      var color = d3.scale.category20c();
       var pie = d3.layout.pie().sort(null);
-      var pieData = [[25, 25, 50], [30, 30, 40], [70, 10, 10, 10], [95, 4, 1], [80, 15, 5]];
 
-      // change attribute to overall
-      that.setAttribute("data-update", "overall")
+      var pieData = [];
+      progress.data.forEach( function(value, index, array) {
+        pieData.push(value.work.weights);
+      });
+
+      // change status to overall marks
+      progress.pie.vars.status = 'weights';
 
       progress.pie.vars.svg = progress.pie.vars.svg
               .data(pieData);
@@ -145,13 +219,28 @@ progress = function() {
 
       progress.pie.vars.paths.exit().remove();
       progress.pie.vars.paths.enter().append("path")
-      .attr("fill", function(d, i) { return color(i); })
-        .attr("transform", "translate(" + 92 + ", " + 75 + ")");
+        .attr("class", "weights")
+        .attr("transform", "translate(" + (progress.pie.vars.pieWidth / 2) + ", " + (progress.pie.vars.pieHeight / 2) + ")");
 
       progress.pie.vars.paths.transition()
           .ease("sin")
            .duration(250)
            .attrTween("d", progress.pie.tweenPie);
+
+      progress.pie.vars.paths.on('mouseover', function(d, i) {
+          // stop event propogation
+          d3.event.cancelBubble = true;
+          
+          progress.pie.showTooltip(d, this);
+        });
+
+      progress.pie.vars.paths.on('mouseout', function(d, i) {
+            progress.pie.removeTooltip();
+        });
+
+      // clear the container's class lits then update class to represent pie state
+      progress.pie.vars.pieEl.className = "";
+      progress.pie.vars.pieEl.classList.add("progressPieWeights");
 
     },
 
@@ -166,8 +255,8 @@ progress = function() {
         pieData.push(tmpArray);
       });
 
-      // change attribute to overall
-      that.setAttribute("data-update", "weights");
+      // change attribute to weights
+      progress.pie.vars.status = 'marks';
 
       progress.pie.vars.svg = progress.pie.vars.svg
           .data(pieData);
@@ -177,13 +266,16 @@ progress = function() {
 
       // handle exit and enter selections
       progress.pie.vars.paths.exit().remove();
-      progress.pie.vars.paths.enter().append("path")
-        .attr("fill", function(d, i) { if(i % 2){ return "#f7505a"; }else{ return "#f34400"; } });
+      progress.pie.vars.paths.enter().append("path");
 
       progress.pie.vars.paths.transition()
           .ease("sin")
            .duration(250)
            .attrTween("d", progress.pie.tweenPie);
+
+      // clear the container's class lits then update class to represent pie state
+      progress.pie.vars.pieEl.className = "";
+      progress.pie.vars.pieEl.classList.add("progressPieMarks");
 
     },
 
@@ -209,7 +301,6 @@ progress = function() {
       progress.pie.vars.paths = progress.pie.vars.svg.selectAll("path")
         .data(function(d, i){ return pie(d) })
         .enter().append("path")
-          .attr("fill", function(d, i) { if(i % 2 === 0 ){ return "#f7505a"; }else{ return "#e8e8e8"; } })
           .attr("transform", "translate(" + (progress.pie.vars.pieWidth / 2) + ", " + (progress.pie.vars.pieHeight / 2) + ")");
 
       progress.pie.vars.paths.transition()
@@ -243,7 +334,7 @@ progress = function() {
         textEl.appendChild(textNode);
 
         // set attributes to place it in the middle of the pie charts
-        textEl.setAttribute("transform", "translate(" + 92 + ", " + 75 + ")");
+        textEl.setAttribute("transform", "translate(" + (progress.pie.vars.pieWidth / 2) + ", " + (progress.pie.vars.pieHeight / 2) + ")");
         textEl.setAttribute('text-anchor', "middle");
         textEl.setAttribute('alignment-baseline', "middle");
         textEl.classList.add("moduleName");

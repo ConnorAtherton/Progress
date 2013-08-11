@@ -3,8 +3,10 @@
 	@include box-sizing(border-box);
 }
 
-body 
+body, html
 {
 	background-color: #f1f1f1;
 	font-family: 'Source Sans Pro', 'open Sans', Helvetica, Arial, serif;
+	margin: 0;
+	padding: 0;
 }
