@@ -48,7 +48,7 @@ progress = function() {
       pieWidth: 184,
       pieHeight : 180,
       outerRadius : 75,
-      innerRadius: 68,
+      innerRadius: 65,
       pieEl: document.createElement('div'),
       paths: null,
       svg: null,
