@@ -144,8 +144,8 @@ progress = function() {
 
       // grab the tolltip position relative to the client window
       // var xPos = d3.event.clientX - d3.event.offsetX, yPos = d3.event.clientY;
-      var xPos = d3.event.x - (d3.event.offsetX / 2);
-      var yPos = d3.event.y - 40;
+      var xPos = d3.event.x - 50;
+      var yPos = d3.event.y ;
 
       // add initial inline styles
       progress.pie.vars.tooltip.style.position = 'absolute';
@@ -201,6 +201,8 @@ progress = function() {
     
     updateWeights: function(that) {
 
+      progress.pie.vars.clickTarget.innerHTML = 'Show Marks';
+
       var pie = d3.layout.pie().sort(null);
 
       var pieData = [];
@@ -245,6 +247,8 @@ progress = function() {
     },
 
     updateMarks: function(that) {
+
+      progress.pie.vars.clickTarget.innerHTML = 'Show Weights';
 
       var pie = d3.layout.pie().sort(null);
 
@@ -363,7 +367,90 @@ progress = function() {
 
   progress.force = {
 
+    vars: {
+      data: {
+        "nodes": [
+          {"name": "Connor Atherton", "group": 1},
+          {"name": "MATH210", "group": 2},
+          {"name": "MATH220", "group": 3},
+          {"name": "MATH230", "group": 4},
+          {"name": "cw1", "group": 2},
+          {"name": "cw2", "group": 2},
+          {"name": "cw3", "group": 2},
+          {"name": "cw1", "group": 3},
+          {"name": "cw2", "group": 3},
+          {"name": "cw3", "group": 3},
+          {"name": "cw1", "group": 4},
+          {"name": "cw2", "group": 4},
+          {"name": "cw3", "group": 4}
+        ],
+        "links": [
+          {"source": 1, "target" : 0},
+          {"source": 2, "target" : 0},
+          {"source": 3, "target" : 0},
+          {"source": 4, "target" : 1},
+          {"source": 5, "target" : 1},
+          {"source": 6, "target" : 1},
+          {"source": 7, "target" : 2},
+          {"source": 8, "target" : 2},
+          {"source": 9, "target" : 2},
+          {"source": 10, "target" : 3},
+          {"source": 11, "target" : 3},
+          {"source": 12, "target" : 3},
+        ]
+      },
+      svg: null,
+      width: 920,
+      height: 450,
+      forceEl: document.createElement('div'),
+    },
+
     show: function() {
+
+      var color = d3.scale.category20();
+
+      // store d3 force layout in a force variables for reuse
+      progress.force.vars.force = d3.layout.force()
+        .charge(-200)
+        .linkDistance(30)
+        .size([ progress.force.vars.width, progress.force.vars.height ]);
+
+      // create the svg element and store
+      progress.force.vars.forceEl.setAttribute('id', 'progressForce');
+      el.appendChild( progress.force.vars.forceEl );
+
+      progress.force.vars.svg = d3.select( progress.force.vars.forceEl ).append("svg")
+        .attr("width", progress.force.vars.width)
+        .attr("height", progress.force.vars.height);
+
+      progress.force.vars.force
+        .nodes(progress.force.vars.data.nodes)
+        .links(progress.force.vars.data.links)
+        .start();
+
+      var link = progress.force.vars.svg.selectAll(".link")
+        .data(progress.force.vars.data.links)
+      .enter().append("line")
+        .attr("class", "link");
+
+      var node = progress.force.vars.svg.selectAll(".node")
+        .data(progress.force.vars.data.nodes)
+      .enter().append("circle")
+        .attr("class", "node")
+        .attr("r", 5)
+        .style("fill", function(d) { return color(d.group); })
+        .call(progress.force.vars.force.drag);
+
+      progress.force.vars.force.on("tick", function() {
+        link.attr("x1", function(d) { return d.source.x; })
+            .attr("y1", function(d) { return d.source.y; })
+            .attr("x2", function(d) { return d.target.x; })
+            .attr("y2", function(d) { return d.target.y; });
+
+        node.attr("cx", function(d) { return d.x; })
+            .attr("cy", function(d) { return d.y; });
+  });
+
 
     },
 
@@ -405,6 +492,9 @@ progress = function() {
 
       // show pie charts on the page
       progress.pie.show();
+
+      // show force diagram on the page
+      progress.force.show();
 
     });
 

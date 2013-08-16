@@ -5,16 +5,16 @@
 // include normalize scss
 // include foundation
 @import "normalize-scss/_normalize.scss";
-
 // include foundation
 @import "foundation/scss/foundation.scss";
+
+// import global partial
+@import "global.scss";
 
 // partials
 @import "buttons.scss";
 @import "pie.scss";
-
-// import global partial
-@import "global.scss";
+@import "force.scss";
 
 #main 
 {
