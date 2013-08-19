@@ -18,6 +18,12 @@
 *
 **/
 
+// render crisp edges for pies
+.progressPieMarks path
+{
+	shape-rendering: geometricPrecision;
+}
+
 // colour scheme for overall marks pie
 
 .progressPieMarks path:nth-child(1)
