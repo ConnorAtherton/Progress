@@ -108,9 +108,6 @@ progress = function() {
           progress.pie.vars.pieEl.classList.add('progressPieMarks');
           el.appendChild( progress.pie.vars.pieEl );
 
-          // store data into graph variable in modified array form 
-          progress.pie.vars.data = arrayify(progress.data);
-
           // Show the initial state of the pie charts and add the module names.
           progress.pie.showOverallMarks();
           progress.pie.showModuleNames();
@@ -375,33 +372,8 @@ progress = function() {
       vars: {
         data: {
           'nodes': [
-            {'name': 'Connor Atherton', 'group': 1},
-            {'name': 'MATH210', 'group': 2},
-            {'name': 'MATH220', 'group': 3},
-            {'name': 'MATH230', 'group': 4},
-            {'name': 'cw1', 'group': 2},
-            {'name': 'cw2', 'group': 2},
-            {'name': 'cw3', 'group': 2},
-            {'name': 'cw1', 'group': 3},
-            {'name': 'cw2', 'group': 3},
-            {'name': 'cw3', 'group': 3},
-            {'name': 'cw1', 'group': 4},
-            {'name': 'cw2', 'group': 4},
-            {'name': 'cw3', 'group': 4}
           ],
           'links': [
-            {'source': 1, 'target' : 0},
-            {'source': 2, 'target' : 0},
-            {'source': 3, 'target' : 0},
-            {'source': 4, 'target' : 1},
-            {'source': 5, 'target' : 1},
-            {'source': 6, 'target' : 1},
-            {'source': 7, 'target' : 2},
-            {'source': 8, 'target' : 2},
-            {'source': 9, 'target' : 2},
-            {'source': 10, 'target' : 3},
-            {'source': 11, 'target' : 3},
-            {'source': 12, 'target' : 3},
           ]
         },
         svg: null,
@@ -413,7 +385,8 @@ progress = function() {
       show: function() {
 
         // format the data
-        progress.force.formatData(progress.data);
+        progress.force.vars.data = progress.force.formatData(progress.data);
+        console.log(progress.force.vars.data);
 
         var color = d3.scale.category20();
 
@@ -467,22 +440,45 @@ progress = function() {
       },
 
       formatData: function(data) {
+
         // create a temporary array to build up our data object
         var tmpObj = {'nodes':[], 'links':[]}
+        // init counter var to link nodes up
+        var i = 2;
+        var arrayPos = 1;
+
         tmpObj['nodes'].push({'name': 'you', 'group': 1});
 
-        for (var module in progress.pie.vars.data) {
-           if (data.hasOwnProperty(module)) {
+        for (var module in progress.data) {
 
-            // add module name to nodes
+          var currentParentNode = arrayPos;
 
-            // loop through all pieces of work
-             console.log(progress.pie.vars.data[module]);
-           }
+            // add module name to nodes and link back to root node
+            tmpObj['nodes'].push({'name': progress.data[module].name, 'group': i });
+            tmpObj['links'].push({'source': arrayPos, 'target': 0});
+
+            // pushed another so update array position
+            arrayPos++;
+            console.log(arrayPos);
+            // loop through assesment names and link them to their parent module
+            progress.data[module].work.names.forEach( function(workName, index, array ) {
+
+              tmpObj['nodes'].push({'name': workName, 'group': i});
+              tmpObj['links'].push({'source': arrayPos, 'target': currentParentNode});
+              arrayPos++;
+              console.log(arrayPos);
+
+            });
+
+            // increment the counters
+          i++;
+
+        }
+
+          return tmpObj;
+
          } 
 
-        return tmpObj;
-      }
 
     }
 
@@ -514,7 +510,7 @@ progress = function() {
         if( err ) return console.log(err.message);
 
         // save the data into a module var to be used elsewhere
-        progress.data = json;
+        progress.data = arrayify(json);
 
         // show pie charts on the page
         progress.pie.show();

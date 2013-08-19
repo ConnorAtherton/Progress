@@ -79,35 +79,27 @@
 	"name" : "MATH235",
 	"work" : {
 		"assessment1" : {
-			"mark" : 72,
-			"weight" : 5
-		},
-		"assessment2" : {
-			"mark" : 61,
-			"weight" : 85
-		},
-		"assessment1" : {
-			"mark" : 63,
-			"weight" : 5
-		},
-		"assessment1" : {
-			"mark" : 45,
-			"weight" : 5
-		}
-	},
-	"overallMark" : 70
-},
-{
-	"name" : "MATH230",
-	"work" : {
-		"assessment1" : {
-			"mark" : 48,
-			"weight" : 70
+			"mark" : 58,
+			"weight" : 80
 		},
 		"assessment2" : {
 			"mark" : 80,
-			"weight" : 30
+			"weight" : 20
 		}
 	},
-	"overallMark" : 52
+	"overallMark" : 73
+},
+{
+	"name" : "MATH295",
+	"work" : {
+		"assessment1" : {
+			"mark" : 58,
+			"weight" : 80
+		},
+		"assessment2" : {
+			"mark" : 80,
+			"weight" : 20
+		}
+	},
+	"overallMark" : 73
 }]
