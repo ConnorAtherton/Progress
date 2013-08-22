@@ -357,7 +357,34 @@ progress = function() {
 
     progress.scatter = {
 
+      vars: {
+        data: {},
+        svg: null,
+        width: 920,
+        height: 600,
+        scatterEl: document.createElement('div'),
+        scatterCurrentPercentEl: document.createElement('div'),
+        scatterForecastPercentEl: document.createElement('div'),
+        scatterListEl: document.createElement('div')
+      },
+
       show: function() {
+
+        // create all elements
+        progress.scatter.vars.scatterCurrentPercentEl.innerHTML = '<h1>Current Percentage</h1>';
+        progress.scatter.vars.scatterForecastPercentEl.innerHTML = '<h1>Forecasted Percentage</h1>';
+
+        progress.scatter.vars.scatterEl.appendChild( progress.scatter.vars.scatterCurrentPercentEl );
+        progress.scatter.vars.scatterEl.appendChild( progress.scatter.vars.scatterForecastPercentEl );
+
+        // create scatter svg and set attributes
+        progress.scatter.vars.svg = d3.select( progress.scatter.vars.scatterEl ).append('svg')
+          .attr('width', progress.scatter.vars.width)
+          .attr('height', progress.scatter.vars.height);
+
+        // create scatter element and set attrs
+        progress.scatter.vars.scatterEl.setAttribute('id', 'progressScatter');
+        el.appendChild( progress.scatter.vars.scatterEl );
 
       },
 
@@ -384,7 +411,6 @@ progress = function() {
 
         // format the data
         progress.force.vars.data = progress.force.formatData(progress.data);
-        console.log(progress.force.vars.data);
 
         var color = d3.scale.category20();
 
@@ -464,14 +490,13 @@ progress = function() {
 
             // pushed another so update array position
             arrayPos++;
-            console.log(arrayPos);
+
             // loop through assesment names and link them to their parent module
             progress.data[module].work.names.forEach( function(workName, index, array ) {
 
               tmpObj['nodes'].push({'name': workName, 'group': i});
               tmpObj['links'].push({'source': arrayPos, 'target': currentParentNode});
               arrayPos++;
-              console.log(arrayPos);
 
             });
 
@@ -522,6 +547,9 @@ progress = function() {
 
         // show force diagram on the page
         progress.force.show();
+
+        // show scatter diagram on page
+        progress.scatter.show();
 
       });
 
