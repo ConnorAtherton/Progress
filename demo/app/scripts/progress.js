@@ -49,7 +49,7 @@ progress = function() {
         pieWidth: 184,
         pieHeight : 180,
         outerRadius : 75,
-        innerRadius: 65,
+        innerRadius: 70,
         pieEl: document.createElement('div'),
         paths: null,
         svg: null,
@@ -370,16 +370,14 @@ progress = function() {
     progress.force = {
 
       vars: {
-        data: {
-          'nodes': [
-          ],
-          'links': [
-          ]
-        },
+        data: {},
         svg: null,
         width: 920,
-        height: 450,
+        height: 550,
         forceEl: document.createElement('div'),
+        charge: -120,
+        friction: 0.8,
+        distance: 45
       },
 
       show: function() {
@@ -392,8 +390,9 @@ progress = function() {
 
         // store d3 force layout in a force variables for reuse
         progress.force.vars.force = d3.layout.force()
-          .charge(-200)
-          .linkDistance(30)
+          .charge(progress.force.vars.charge)
+          .friction(progress.force.vars.friction)
+          .distance(progress.force.vars.distance)
           .size([ progress.force.vars.width, progress.force.vars.height ]);
 
         // create the svg element and store
@@ -422,6 +421,9 @@ progress = function() {
           .style('fill', function(d) { return color(d.group); })
           .call(progress.force.vars.force.drag);
 
+          // try reduce the inital bounce
+          forwardAlpha(progress.force.vars.force, 0.04);
+
         progress.force.vars.force.on('tick', function() {
           link.attr('x1', function(d) { return d.source.x; })
               .attr('y1', function(d) { return d.source.y; })
@@ -443,14 +445,17 @@ progress = function() {
 
         // create a temporary array to build up our data object
         var tmpObj = {'nodes':[], 'links':[]}
-        // init counter var to link nodes up
+
+        // variable that assigns a group to nodes of same module
         var i = 2;
+        // holds ths current position of the array node
         var arrayPos = 1;
 
         tmpObj['nodes'].push({'name': 'you', 'group': 1});
 
         for (var module in progress.data) {
 
+          // actual module node that module work has to link too
           var currentParentNode = arrayPos;
 
             // add module name to nodes and link back to root node
@@ -470,7 +475,7 @@ progress = function() {
 
             });
 
-            // increment the counters
+          // increment the counters
           i++;
 
         }
@@ -520,6 +525,18 @@ progress = function() {
 
       });
 
+    }
+
+    /**
+    *
+    * Functiomn to reduce the initial 'bouncing' of the force layout
+    *
+    **/
+    function forwardAlpha(layout, alpha, max) {
+      alpha = alpha || 0;
+      max = max || 1000;
+      var i = 0;
+      while(layout.alpha() > alpha && i++ < max) layout.tick();
     }
 
     /**
