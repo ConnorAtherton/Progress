@@ -147,8 +147,6 @@ progress = function() {
         var xPos = d3.event.x;
         var yPos = d3.event.y;
 
-         console.log(d3.event);
-
         // add initial inline styles
         progress.pie.vars.tooltip.style.position = 'absolute';
         progress.pie.vars.tooltip.style.left = (xPos) + 'px';
@@ -360,8 +358,8 @@ progress = function() {
       vars: {
         data: {},
         svg: null,
-        width: 920,
-        height: 600,
+        width: 670,
+        height: 550,
         scatterEl: document.createElement('div'),
         scatterCurrentPercentEl: document.createElement('div'),
         scatterForecastPercentEl: document.createElement('div'),
@@ -370,25 +368,43 @@ progress = function() {
 
       show: function() {
 
-        // create all elements
-        progress.scatter.vars.scatterCurrentPercentEl.innerHTML = '<h1>Current Percentage</h1>';
-        progress.scatter.vars.scatterForecastPercentEl.innerHTML = '<h1>Forecasted Percentage</h1>';
+        var self = progress.scatter;
 
-        progress.scatter.vars.scatterEl.appendChild( progress.scatter.vars.scatterCurrentPercentEl );
-        progress.scatter.vars.scatterEl.appendChild( progress.scatter.vars.scatterForecastPercentEl );
+        // create all elements
+        self.vars.scatterCurrentPercentEl.innerHTML = '<h2>Current Percentage</h2>';
+        self.vars.scatterForecastPercentEl.innerHTML = '<h2>Forecasted Percentage</h2>';
+
+        self.addIDToDisplayElements();
+
+        // append all elements to the scatter element before appending to page
+        self.vars.scatterEl.appendChild( self.vars.scatterCurrentPercentEl );
+        self.vars.scatterEl.appendChild( self.vars.scatterForecastPercentEl );
 
         // create scatter svg and set attributes
-        progress.scatter.vars.svg = d3.select( progress.scatter.vars.scatterEl ).append('svg')
-          .attr('width', progress.scatter.vars.width)
-          .attr('height', progress.scatter.vars.height);
+        self.vars.svg = d3.select( self.vars.scatterEl ).append('svg')
+          .attr('width', self.vars.width)
+          .attr('height', self.vars.height);
 
-        // create scatter element and set attrs
-        progress.scatter.vars.scatterEl.setAttribute('id', 'progressScatter');
-        el.appendChild( progress.scatter.vars.scatterEl );
+        // append all elements to the scatter element before appending to page
+        self.vars.scatterEl.appendChild( self.vars.scatterListEl );
+        self.vars.scatterEl.appendChild( self.vars.scatterCurrentPercentEl );
+        self.vars.scatterEl.appendChild( self.vars.scatterForecastPercentEl );
+
+        // finally install the parent element to the page
+        el.appendChild( this.vars.scatterEl );
 
       },
 
       hide: function() {
+
+      },
+
+      addIDToDisplayElements: function() {
+
+        progress.scatter.vars.scatterForecastPercentEl.setAttribute('id', 'scatterForecastElement')
+        progress.scatter.vars.scatterCurrentPercentEl.setAttribute('id', 'scatterCurrentElement')
+        progress.scatter.vars.scatterListEl.setAttribute('id', 'scatterListElement');
+        progress.scatter.vars.scatterEl.setAttribute('id', 'progressScatter');
 
       }
 
@@ -445,10 +461,13 @@ progress = function() {
           .attr('class', 'node')
           .attr('r', 5)
           .style('fill', function(d) { return color(d.group); })
-          .call(progress.force.vars.force.drag);
+          .call(progress.force.vars.force.drag)
+          .on('mouseover', function(d) {
 
-          // try reduce the inital bounce
-          forwardAlpha(progress.force.vars.force, 0.04);
+          });
+
+        // try reduce the inital bounce
+        forwardAlpha(progress.force.vars.force, 0.04);
 
         progress.force.vars.force.on('tick', function() {
           link.attr('x1', function(d) { return d.source.x; })
@@ -508,9 +527,48 @@ progress = function() {
           return tmpObj;
 
          } 
+      },
 
+      showTooltip: function(data, that) {
 
-    }
+        // grab the tolltip position relative to the client window
+        // var xPos = d3.event.clientX - d3.event.offsetX, yPos = d3.event.clientY;
+        var xPos = d3.event.x;
+        var yPos = d3.event.y;
+
+        // add initial inline styles
+        progress.pie.vars.tooltip.style.position = 'absolute';
+        progress.pie.vars.tooltip.style.left = (xPos) + 'px';
+        progress.pie.vars.tooltip.style.top = (yPos) + 'px';
+
+        // change the inner html depending on the data
+        if(progress.pie.vars.status === 'marks')
+        {
+          progress.pie.vars.tooltip.innerHTML = 'Overall Mark: ' + data.value + '%';
+        }
+        else
+        {
+          progress.pie.vars.tooltip.innerHTML = 'Module weight: ' + data.value + '%';
+        }
+
+        // show the tooltip on the page
+        progress.pie.vars.tooltip.style.display = 'inline';
+
+      },
+
+      removeTooltip: function() {
+
+        // hide the tooltip from the page
+        progress.pie.vars.tooltip.style.display = 'none';
+
+        // reset the tooltip coords
+        progress.pie.vars.tooltip.style.left = 0;
+        progress.pie.vars.tooltip.style.top = 0;
+
+        // reset d3.event so we can register other events
+        d3.event = '';
+
+      },
 
     /**
     *

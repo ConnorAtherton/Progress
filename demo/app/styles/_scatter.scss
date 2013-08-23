@@ -1,0 +1,53 @@
+/**
+*
+* scatter container styles
+*
+**/
+
+#progressScatter
+{
+	width: 100%;
+	height: 650px;
+}
+
+/**
+*
+* Scatter svg 
+*
+**/
+
+#progressScatter svg
+{
+	float: left;
+}
+
+/**
+*
+* Module list
+*
+**/
+
+#scatterListElement
+{
+	width: 250px;
+	height: 550px;
+	background-color: red;
+	float: left;
+}
+
+/**
+*
+* percentage headers
+*
+**/
+
+#scatterCurrentElement, #scatterForecastElement
+{
+	height: 100px;
+	width: 50%;
+	float: left;
+	text-align: center;
+}
+
+
+
