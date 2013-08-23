@@ -63,35 +63,7 @@
 	fill: #cd35d3;
 }
 
-/**
-*
-* Pie chart tooltop styles
-*
-**/
 
-#pieTooltip
-{
-	width: 100px;
-	font-size: 12px;
-	padding: 10px;
-	background-color: rgba(0, 0, 0, 0.6);
-	color: white;
-	text-align: center; 
-
-	@include border-radius(3px);
-}
-
-#pieTooltip:before
-{	
-	content: ' ';
-	position: absolute;
-	width: 0;
-	height: 0;
-	left: 42px;
-	top: -14px;
-	border: 7px solid;
-	border-color: transparent transparent rgba(0, 0, 0, 0.6) transparent;
-}
 
 
 

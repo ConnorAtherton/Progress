@@ -98,11 +98,6 @@ progress = function() {
             progress.pie.vars.status === 'marks' ? progress.pie.updateWeights(this) : progress.pie.updateMarks(this);
           });
 
-          d3.select('path').on('mouseover', function(d, i) {
-            console.log(d);
-
-          })
-
           // Append created DOM element to the element used for the plugin.
           progress.pie.vars.pieEl.setAttribute('id', 'progressPie');
           progress.pie.vars.pieEl.classList.add('progressPieMarks');
@@ -115,6 +110,7 @@ progress = function() {
           // create the tooltip, hide it and append it to the dom
           progress.pie.vars.tooltip = document.createElement('div');
           progress.pie.vars.tooltip.setAttribute('id', 'pieTooltip');
+          progress.pie.vars.tooltip.classList.add('tooltip');
           progress.pie.vars.tooltip.style.display = 'none';
           document.body.appendChild( progress.pie.vars.tooltip );
 
@@ -415,6 +411,7 @@ progress = function() {
       vars: {
         data: {},
         svg: null,
+        tooltip: null,
         width: 920,
         height: 550,
         forceEl: document.createElement('div'),
@@ -429,6 +426,13 @@ progress = function() {
         progress.force.vars.data = progress.force.formatData(progress.data);
 
         var color = d3.scale.category20();
+
+        // create the tooltip, hide it and append it to the dom
+        progress.force.vars.tooltip = document.createElement('div');
+        progress.force.vars.tooltip.setAttribute('id', 'forceTooltip');
+        progress.force.vars.tooltip.classList.add('tooltip');
+        progress.force.vars.tooltip.style.display = 'none';
+        document.body.appendChild( progress.force.vars.tooltip );
 
         // store d3 force layout in a force variables for reuse
         progress.force.vars.force = d3.layout.force()
@@ -463,11 +467,14 @@ progress = function() {
           .style('fill', function(d) { return color(d.group); })
           .call(progress.force.vars.force.drag)
           .on('mouseover', function(d) {
-
+            progress.force.showTooltip(d);
+          })
+          .on('mouseout', function(d) {
+            progress.force.removeTooltip();
           });
 
         // try reduce the inital bounce
-        forwardAlpha(progress.force.vars.force, 0.04);
+        forwardAlpha(progress.force.vars.force, 0.03);
 
         progress.force.vars.force.on('tick', function() {
           link.attr('x1', function(d) { return d.source.x; })
@@ -526,10 +533,9 @@ progress = function() {
 
           return tmpObj;
 
-         } 
-      },
+      }, 
 
-      showTooltip: function(data, that) {
+      showTooltip: function(data) {
 
         // grab the tolltip position relative to the client window
         // var xPos = d3.event.clientX - d3.event.offsetX, yPos = d3.event.clientY;
@@ -537,38 +543,33 @@ progress = function() {
         var yPos = d3.event.y;
 
         // add initial inline styles
-        progress.pie.vars.tooltip.style.position = 'absolute';
-        progress.pie.vars.tooltip.style.left = (xPos) + 'px';
-        progress.pie.vars.tooltip.style.top = (yPos) + 'px';
+        progress.force.vars.tooltip.style.position = 'absolute';
+        progress.force.vars.tooltip.style.left = (xPos) + 'px';
+        progress.force.vars.tooltip.style.top = (yPos) + 'px';
 
-        // change the inner html depending on the data
-        if(progress.pie.vars.status === 'marks')
-        {
-          progress.pie.vars.tooltip.innerHTML = 'Overall Mark: ' + data.value + '%';
-        }
-        else
-        {
-          progress.pie.vars.tooltip.innerHTML = 'Module weight: ' + data.value + '%';
-        }
+        // set the inner html to the module name
+        progress.force.vars.tooltip.innerHTML = data.name;
 
         // show the tooltip on the page
-        progress.pie.vars.tooltip.style.display = 'inline';
+        progress.force.vars.tooltip.style.display = 'inline';
 
       },
 
       removeTooltip: function() {
 
         // hide the tooltip from the page
-        progress.pie.vars.tooltip.style.display = 'none';
+        progress.force.vars.tooltip.style.display = 'none';
 
         // reset the tooltip coords
-        progress.pie.vars.tooltip.style.left = 0;
-        progress.pie.vars.tooltip.style.top = 0;
+        progress.force.vars.tooltip.style.left = 0;
+        progress.force.vars.tooltip.style.top = 0;
 
         // reset d3.event so we can register other events
         d3.event = '';
 
       },
+
+    }
 
     /**
     *
