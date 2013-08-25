@@ -30,9 +30,33 @@
 #scatterListElement
 {
 	width: 250px;
-	height: 550px;
-	background-color: #f3f3f3;
+	height: 560px;
 	float: left;
+	background-color: #e8e8e8;
+	text-align: center;
+	overflow: scroll;
+}
+
+#scatterListElement .scatterCurrent
+{
+	color: white;
+	background-color: #f7505a;
+}
+
+.scatterModule
+{
+	width: 100%;
+	height: 70px;
+	line-height: 50px;
+	color: red;
+	padding: 10px;
+	
+}
+
+.scatterModule:hover
+{
+	cursor: pointer;
+	background-color: #e2e2e2;
 }
 
 /**
@@ -71,6 +95,14 @@
 {
 	fill: #f7505a;
 }
+
+.scatterline
+{
+	fill: none;
+	stroke-width: 2px;
+	stroke: #666;	
+}
+
 
 
 
