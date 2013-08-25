@@ -116,11 +116,18 @@ progress = function() {
 
           // add an event listener to each path
           d3.selectAll('path').on('mouseover', function(d, i) {
-            // stop event propogation
-            //d3.event.stopPropogation();
-            d3.event.cancelBubble = 'true';
 
-            progress.pie.showTooltip(d, this);
+            // change the inner html depending on the data
+            if(progress.pie.vars.status === 'marks')
+            { 
+              progress.pie.vars.tooltip.innerHTML = 'Overall Mark: ' + d.value + '%';
+            }
+            else
+            {
+              progress.pie.vars.tooltip.innerHTML = 'Module weight: ' + d.value + '%';
+            }
+
+            progress.pie.showTooltip();
           });
 
           // add an event listener to each path
@@ -136,27 +143,14 @@ progress = function() {
         console.log('hide the pie charts');
       },
 
-      showTooltip: function(data, that) {
+      showTooltip: function() {
 
-        // grab the tolltip position relative to the client window
-        // var xPos = d3.event.clientX - d3.event.offsetX, yPos = d3.event.clientY;
-        var xPos = d3.event.x;
-        var yPos = d3.event.y;
+        var coords = d3.mouse(document.body);
 
         // add initial inline styles
         progress.pie.vars.tooltip.style.position = 'absolute';
-        progress.pie.vars.tooltip.style.left = (xPos) + 'px';
-        progress.pie.vars.tooltip.style.top = (yPos) + 'px';
-
-        // change the inner html depending on the data
-        if(progress.pie.vars.status === 'marks')
-        {
-          progress.pie.vars.tooltip.innerHTML = 'Overall Mark: ' + data.value + '%';
-        }
-        else
-        {
-          progress.pie.vars.tooltip.innerHTML = 'Module weight: ' + data.value + '%';
-        }
+        progress.pie.vars.tooltip.style.left = (coords[0] - 50 )+ 'px';
+        progress.pie.vars.tooltip.style.top = (coords[1] + 15) + 'px';
 
         // show the tooltip on the page
         progress.pie.vars.tooltip.style.display = 'inline';
@@ -226,10 +220,19 @@ progress = function() {
              .attrTween('d', progress.pie.tweenPie);
 
         progress.pie.vars.paths.on('mouseover', function(d, i) {
-            // stop event propogation
-            d3.event.cancelBubble = true;
+
+            // change the inner html depending on the data
+            if(progress.pie.vars.status === 'marks')
+            { 
+              progress.pie.vars.tooltip.innerHTML = 'Overall Mark: ' + d.value + '%';
+            }
+            else
+            {
+              progress.pie.vars.tooltip.innerHTML = 'Module weight: ' + d.value + '%';
+            }
             
             progress.pie.showTooltip(d, this);
+
           });
 
         progress.pie.vars.paths.on('mouseout', function(d, i) {
@@ -352,19 +355,27 @@ progress = function() {
     progress.scatter = {
 
       vars: {
-        data: {},
+        data: null,
         svg: null,
         width: 670,
         height: 550,
+        padding: 35,
         scatterEl: document.createElement('div'),
         scatterCurrentPercentEl: document.createElement('div'),
         scatterForecastPercentEl: document.createElement('div'),
-        scatterListEl: document.createElement('div')
+        scatterListEl: document.createElement('div'),
+        xScale: null,
+        yScale: null,
+        xAxis: null,
+        yAxis: null
       },
 
       show: function() {
 
         var self = progress.scatter;
+
+        // build scatter data
+        self.vars.data = self.formatData();
 
         // create all elements
         self.vars.scatterCurrentPercentEl.innerHTML = '<h2>Current Percentage</h2>';
@@ -376,10 +387,8 @@ progress = function() {
         self.vars.scatterEl.appendChild( self.vars.scatterCurrentPercentEl );
         self.vars.scatterEl.appendChild( self.vars.scatterForecastPercentEl );
 
-        // create scatter svg and set attributes
-        self.vars.svg = d3.select( self.vars.scatterEl ).append('svg')
-          .attr('width', self.vars.width)
-          .attr('height', self.vars.height);
+        // draw the axis and data on to the svg
+        progress.scatter.createScatterGraph([]);
 
         // append all elements to the scatter element before appending to page
         self.vars.scatterEl.appendChild( self.vars.scatterListEl );
@@ -388,6 +397,60 @@ progress = function() {
 
         // finally install the parent element to the page
         el.appendChild( this.vars.scatterEl );
+
+
+      },
+
+      createScatterGraph: function() {
+
+        progress.scatter.vars.svg = d3.select( progress.scatter.vars.scatterEl )
+          .append("svg")
+          .attr("width", progress.scatter.vars.width)
+          .attr("height", progress.scatter.vars.height);
+
+
+        progress.scatter.vars.xScale = d3.scale.ordinal()
+          .domain( progress.scatter.vars.data.map( function(d) { return d.name }))
+          .rangePoints([progress.scatter.vars.padding, progress.scatter.vars.width - (progress.scatter.vars.padding)]);
+
+        progress.scatter.vars.yScale = d3.scale.linear()
+          .domain([0, 100])
+          .range([progress.scatter.vars.height - progress.scatter.vars.padding, progress.scatter.vars.padding]);
+
+        progress.scatter.vars.xAxis = d3.svg.axis()
+          .scale( progress.scatter.vars.xScale )
+          .orient('bottom');
+
+        progress.scatter.vars.yAxis = d3.svg.axis()
+          .scale( progress.scatter.vars.yScale )
+          .orient('left')
+          .ticks(10);
+
+        // actually add the data here
+        progress.scatter.vars.svg.selectAll('circle')
+          .data( progress.scatter.vars.data)
+          .enter()
+          .append('circle')
+          .attr('cx', function(d) {
+            return progress.scatter.vars.xScale(d.name);
+          })
+          .attr('cy', function(d) {
+            return progress.scatter.vars.yScale(d.mark);
+          })
+          .attr('r', 4);
+
+        progress.scatter.vars.svg.append('g')
+          .attr('class', 'axis')
+          .attr('transform', 'translate(0,' + (progress.scatter.vars.height - progress.scatter.vars.padding) + ')')
+          .call( progress.scatter.vars.xAxis );
+
+        progress.scatter.vars.svg.append('g')
+          .attr('class', 'axis')
+          .attr('transform', 'translate(' + progress.scatter.vars.padding + ',0)')
+          .call( progress.scatter.vars.yAxis );
+
+        // finally generate the axis after all the data so it appears on top
+
 
       },
 
@@ -402,6 +465,18 @@ progress = function() {
         progress.scatter.vars.scatterListEl.setAttribute('id', 'scatterListElement');
         progress.scatter.vars.scatterEl.setAttribute('id', 'progressScatter');
 
+      },
+
+      formatData: function() {
+        var tmpData = [];
+        var tmpObj = {};
+
+        progress.data.forEach( function( value, index, array ) {
+          tmpObj = {'name': value.name, 'mark': value.overallMark}
+          tmpData.push(tmpObj)
+        }, this);
+
+        return tmpData;
       }
 
     }
@@ -463,7 +538,7 @@ progress = function() {
           .data(progress.force.vars.data.nodes)
         .enter().append('circle')
           .attr('class', 'node')
-          .attr('r', 5)
+          .attr('r', 4)
           .style('fill', function(d) { return color(d.group); })
           .call(progress.force.vars.force.drag)
           .on('mouseover', function(d) {
@@ -537,15 +612,15 @@ progress = function() {
 
       showTooltip: function(data) {
 
-        // grab the tolltip position relative to the client window
-        // var xPos = d3.event.clientX - d3.event.offsetX, yPos = d3.event.clientY;
-        var xPos = d3.event.x;
-        var yPos = d3.event.y;
+        var coords = d3.mouse(document.body);
 
         // add initial inline styles
         progress.force.vars.tooltip.style.position = 'absolute';
-        progress.force.vars.tooltip.style.left = (xPos) + 'px';
-        progress.force.vars.tooltip.style.top = (yPos) + 'px';
+        progress.force.vars.tooltip.style.left = (coords[0] - 50 )+ 'px';
+        progress.force.vars.tooltip.style.top = (coords[1] + 15) + 'px';
+
+        // show the tooltip on the page
+        progress.force.vars.tooltip.style.display = 'inline';
 
         // set the inner html to the module name
         progress.force.vars.tooltip.innerHTML = data.name;

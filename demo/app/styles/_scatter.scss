@@ -49,5 +49,24 @@
 	text-align: center;
 }
 
+/**
+*
+* Scatter graph (axis, points, ticks etc)
+*
+**/
+
+.axis path, .axis line
+{
+	fill: none;
+	stroke: black;
+	shape-rendering: crispEdges;
+}
+
+.axis text
+{
+	font-size: 12px;
+}
+
+
 
 
