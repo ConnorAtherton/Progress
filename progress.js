@@ -49,7 +49,7 @@ progress = function() {
         pieWidth: 184,
         pieHeight : 180,
         outerRadius : 75,
-        innerRadius: 65,
+        innerRadius: 70,
         pieEl: document.createElement('div'),
         paths: null,
         svg: null,
@@ -98,11 +98,6 @@ progress = function() {
             progress.pie.vars.status === 'marks' ? progress.pie.updateWeights(this) : progress.pie.updateMarks(this);
           });
 
-          d3.select('path').on('mouseover', function(d, i) {
-            console.log(d);
-
-          })
-
           // Append created DOM element to the element used for the plugin.
           progress.pie.vars.pieEl.setAttribute('id', 'progressPie');
           progress.pie.vars.pieEl.classList.add('progressPieMarks');
@@ -115,16 +110,24 @@ progress = function() {
           // create the tooltip, hide it and append it to the dom
           progress.pie.vars.tooltip = document.createElement('div');
           progress.pie.vars.tooltip.setAttribute('id', 'pieTooltip');
+          progress.pie.vars.tooltip.classList.add('tooltip');
           progress.pie.vars.tooltip.style.display = 'none';
           document.body.appendChild( progress.pie.vars.tooltip );
 
           // add an event listener to each path
           d3.selectAll('path').on('mouseover', function(d, i) {
-            // stop event propogation
-            //d3.event.stopPropogation();
-            d3.event.cancelBubble = 'true';
 
-            progress.pie.showTooltip(d, this);
+            // change the inner html depending on the data
+            if(progress.pie.vars.status === 'marks')
+            { 
+              progress.pie.vars.tooltip.innerHTML = 'Overall Mark: ' + d.value + '%';
+            }
+            else
+            {
+              progress.pie.vars.tooltip.innerHTML = 'Module weight: ' + d.value + '%';
+            }
+
+            progress.pie.showTooltip();
           });
 
           // add an event listener to each path
@@ -140,29 +143,14 @@ progress = function() {
         console.log('hide the pie charts');
       },
 
-      showTooltip: function(data, that) {
+      showTooltip: function() {
 
-        // grab the tolltip position relative to the client window
-        // var xPos = d3.event.clientX - d3.event.offsetX, yPos = d3.event.clientY;
-        var xPos = d3.event.x;
-        var yPos = d3.event.y;
-
-         console.log(d3.event);
+        var coords = d3.mouse(document.body);
 
         // add initial inline styles
         progress.pie.vars.tooltip.style.position = 'absolute';
-        progress.pie.vars.tooltip.style.left = (xPos) + 'px';
-        progress.pie.vars.tooltip.style.top = (yPos) + 'px';
-
-        // change the inner html depending on the data
-        if(progress.pie.vars.status === 'marks')
-        {
-          progress.pie.vars.tooltip.innerHTML = 'Overall Mark: ' + data.value + '%';
-        }
-        else
-        {
-          progress.pie.vars.tooltip.innerHTML = 'Module weight: ' + data.value + '%';
-        }
+        progress.pie.vars.tooltip.style.left = (coords[0] - 50 )+ 'px';
+        progress.pie.vars.tooltip.style.top = (coords[1] + 15) + 'px';
 
         // show the tooltip on the page
         progress.pie.vars.tooltip.style.display = 'inline';
@@ -232,10 +220,19 @@ progress = function() {
              .attrTween('d', progress.pie.tweenPie);
 
         progress.pie.vars.paths.on('mouseover', function(d, i) {
-            // stop event propogation
-            d3.event.cancelBubble = true;
+
+            // change the inner html depending on the data
+            if(progress.pie.vars.status === 'marks')
+            { 
+              progress.pie.vars.tooltip.innerHTML = 'Overall Mark: ' + d.value + '%';
+            }
+            else
+            {
+              progress.pie.vars.tooltip.innerHTML = 'Module weight: ' + d.value + '%';
+            }
             
             progress.pie.showTooltip(d, this);
+
           });
 
         progress.pie.vars.paths.on('mouseout', function(d, i) {
@@ -357,12 +354,128 @@ progress = function() {
 
     progress.scatter = {
 
+      vars: {
+        data: null,
+        svg: null,
+        width: 670,
+        height: 550,
+        padding: 35,
+        scatterEl: document.createElement('div'),
+        scatterCurrentPercentEl: document.createElement('div'),
+        scatterForecastPercentEl: document.createElement('div'),
+        scatterListEl: document.createElement('div'),
+        xScale: null,
+        yScale: null,
+        xAxis: null,
+        yAxis: null
+      },
+
       show: function() {
+
+        var self = progress.scatter;
+
+        // build scatter data
+        self.vars.data = self.formatData();
+
+        // create all elements
+        self.vars.scatterCurrentPercentEl.innerHTML = '<h2>Current Percentage</h2>';
+        self.vars.scatterForecastPercentEl.innerHTML = '<h2>Forecasted Percentage</h2>';
+
+        self.addIDToDisplayElements();
+
+        // append all elements to the scatter element before appending to page
+        self.vars.scatterEl.appendChild( self.vars.scatterCurrentPercentEl );
+        self.vars.scatterEl.appendChild( self.vars.scatterForecastPercentEl );
+
+        // draw the axis and data on to the svg
+        progress.scatter.createScatterGraph([]);
+
+        // append all elements to the scatter element before appending to page
+        self.vars.scatterEl.appendChild( self.vars.scatterListEl );
+        self.vars.scatterEl.appendChild( self.vars.scatterCurrentPercentEl );
+        self.vars.scatterEl.appendChild( self.vars.scatterForecastPercentEl );
+
+        // finally install the parent element to the page
+        el.appendChild( this.vars.scatterEl );
+
+
+      },
+
+      createScatterGraph: function() {
+
+        progress.scatter.vars.svg = d3.select( progress.scatter.vars.scatterEl )
+          .append("svg")
+          .attr("width", progress.scatter.vars.width)
+          .attr("height", progress.scatter.vars.height);
+
+
+        progress.scatter.vars.xScale = d3.scale.ordinal()
+          .domain( progress.scatter.vars.data.map( function(d) { return d.name }))
+          .rangePoints([progress.scatter.vars.padding, progress.scatter.vars.width - (progress.scatter.vars.padding)]);
+
+        progress.scatter.vars.yScale = d3.scale.linear()
+          .domain([0, 100])
+          .range([progress.scatter.vars.height - progress.scatter.vars.padding, progress.scatter.vars.padding]);
+
+        progress.scatter.vars.xAxis = d3.svg.axis()
+          .scale( progress.scatter.vars.xScale )
+          .orient('bottom');
+
+        progress.scatter.vars.yAxis = d3.svg.axis()
+          .scale( progress.scatter.vars.yScale )
+          .orient('left')
+          .ticks(10);
+
+        progress.scatter.vars.svg.append('g')
+          .attr('class', 'axis')
+          .attr('transform', 'translate(0,' + (progress.scatter.vars.height - progress.scatter.vars.padding) + ')')
+          .call( progress.scatter.vars.xAxis );
+
+        progress.scatter.vars.svg.append('g')
+          .attr('class', 'axis')
+          .attr('transform', 'translate(' + progress.scatter.vars.padding + ',0)')
+          .call( progress.scatter.vars.yAxis );
+
+        // actually add the data here
+        progress.scatter.vars.svg.selectAll('circle')
+          .data( progress.scatter.vars.data)
+          .enter()
+          .append('circle')
+          .attr('cx', function(d) {
+            return progress.scatter.vars.xScale(d.name);
+          })
+          .attr('cy', function(d) {
+            return progress.scatter.vars.yScale(d.mark);
+          })
+          .attr('r', 4)
+          .attr('class', 'scatterData');
+
 
       },
 
       hide: function() {
 
+      },
+
+      addIDToDisplayElements: function() {
+
+        progress.scatter.vars.scatterForecastPercentEl.setAttribute('id', 'scatterForecastElement')
+        progress.scatter.vars.scatterCurrentPercentEl.setAttribute('id', 'scatterCurrentElement')
+        progress.scatter.vars.scatterListEl.setAttribute('id', 'scatterListElement');
+        progress.scatter.vars.scatterEl.setAttribute('id', 'progressScatter');
+
+      },
+
+      formatData: function() {
+        var tmpData = [];
+        var tmpObj = {};
+
+        progress.data.forEach( function( value, index, array ) {
+          tmpObj = {'name': value.name, 'mark': value.overallMark}
+          tmpData.push(tmpObj)
+        }, this);
+
+        return tmpData;
       }
 
     }
@@ -370,30 +483,36 @@ progress = function() {
     progress.force = {
 
       vars: {
-        data: {
-          'nodes': [
-          ],
-          'links': [
-          ]
-        },
+        data: {},
         svg: null,
+        tooltip: null,
         width: 920,
-        height: 450,
+        height: 550,
         forceEl: document.createElement('div'),
+        charge: -120,
+        friction: 0.8,
+        distance: 45
       },
 
       show: function() {
 
         // format the data
         progress.force.vars.data = progress.force.formatData(progress.data);
-        console.log(progress.force.vars.data);
 
         var color = d3.scale.category20();
 
+        // create the tooltip, hide it and append it to the dom
+        progress.force.vars.tooltip = document.createElement('div');
+        progress.force.vars.tooltip.setAttribute('id', 'forceTooltip');
+        progress.force.vars.tooltip.classList.add('tooltip');
+        progress.force.vars.tooltip.style.display = 'none';
+        document.body.appendChild( progress.force.vars.tooltip );
+
         // store d3 force layout in a force variables for reuse
         progress.force.vars.force = d3.layout.force()
-          .charge(-200)
-          .linkDistance(30)
+          .charge(progress.force.vars.charge)
+          .friction(progress.force.vars.friction)
+          .distance(progress.force.vars.distance)
           .size([ progress.force.vars.width, progress.force.vars.height ]);
 
         // create the svg element and store
@@ -418,9 +537,18 @@ progress = function() {
           .data(progress.force.vars.data.nodes)
         .enter().append('circle')
           .attr('class', 'node')
-          .attr('r', 5)
+          .attr('r', 4)
           .style('fill', function(d) { return color(d.group); })
-          .call(progress.force.vars.force.drag);
+          .call(progress.force.vars.force.drag)
+          .on('mouseover', function(d) {
+            progress.force.showTooltip(d);
+          })
+          .on('mouseout', function(d) {
+            progress.force.removeTooltip();
+          });
+
+        // try reduce the inital bounce
+        forwardAlpha(progress.force.vars.force, 0.01);
 
         progress.force.vars.force.on('tick', function() {
           link.attr('x1', function(d) { return d.source.x; })
@@ -443,14 +571,17 @@ progress = function() {
 
         // create a temporary array to build up our data object
         var tmpObj = {'nodes':[], 'links':[]}
-        // init counter var to link nodes up
+
+        // variable that assigns a group to nodes of same module
         var i = 2;
+        // holds ths current position of the array node
         var arrayPos = 1;
 
         tmpObj['nodes'].push({'name': 'you', 'group': 1});
 
         for (var module in progress.data) {
 
+          // actual module node that module work has to link too
           var currentParentNode = arrayPos;
 
             // add module name to nodes and link back to root node
@@ -459,26 +590,58 @@ progress = function() {
 
             // pushed another so update array position
             arrayPos++;
-            console.log(arrayPos);
+
             // loop through assesment names and link them to their parent module
             progress.data[module].work.names.forEach( function(workName, index, array ) {
 
               tmpObj['nodes'].push({'name': workName, 'group': i});
               tmpObj['links'].push({'source': arrayPos, 'target': currentParentNode});
               arrayPos++;
-              console.log(arrayPos);
 
             });
 
-            // increment the counters
+          // increment the counters
           i++;
 
         }
 
           return tmpObj;
 
-         } 
+      }, 
 
+      showTooltip: function(data) {
+
+        var coords = d3.mouse(document.body);
+
+        // add initial inline styles
+        progress.force.vars.tooltip.style.position = 'absolute';
+        progress.force.vars.tooltip.style.left = (coords[0] - 50 )+ 'px';
+        progress.force.vars.tooltip.style.top = (coords[1] + 15) + 'px';
+
+        // show the tooltip on the page
+        progress.force.vars.tooltip.style.display = 'inline';
+
+        // set the inner html to the module name
+        progress.force.vars.tooltip.innerHTML = data.name;
+
+        // show the tooltip on the page
+        progress.force.vars.tooltip.style.display = 'inline';
+
+      },
+
+      removeTooltip: function() {
+
+        // hide the tooltip from the page
+        progress.force.vars.tooltip.style.display = 'none';
+
+        // reset the tooltip coords
+        progress.force.vars.tooltip.style.left = 0;
+        progress.force.vars.tooltip.style.top = 0;
+
+        // reset d3.event so we can register other events
+        d3.event = '';
+
+      },
 
     }
 
@@ -518,8 +681,23 @@ progress = function() {
         // show force diagram on the page
         progress.force.show();
 
+        // show scatter diagram on page
+        progress.scatter.show();
+
       });
 
+    }
+
+    /**
+    *
+    * Functiomn to reduce the initial 'bouncing' of the force layout
+    *
+    **/
+    function forwardAlpha(layout, alpha, max) {
+      alpha = alpha || 0;
+      max = max || 1000;
+      var i = 0;
+      while(layout.alpha() > alpha && i++ < max) layout.tick();
     }
 
     /**

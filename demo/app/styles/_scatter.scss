@@ -31,7 +31,7 @@
 {
 	width: 250px;
 	height: 550px;
-	background-color: red;
+	background-color: #f3f3f3;
 	float: left;
 }
 
@@ -58,13 +58,18 @@
 .axis path, .axis line
 {
 	fill: none;
-	stroke: black;
+	stroke: #e1e1e1;
 	shape-rendering: crispEdges;
 }
 
 .axis text
 {
 	font-size: 12px;
+}
+
+.scatterData
+{
+	fill: #f7505a;
 }
 
 

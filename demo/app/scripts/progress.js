@@ -426,6 +426,16 @@ progress = function() {
           .orient('left')
           .ticks(10);
 
+        progress.scatter.vars.svg.append('g')
+          .attr('class', 'axis')
+          .attr('transform', 'translate(0,' + (progress.scatter.vars.height - progress.scatter.vars.padding) + ')')
+          .call( progress.scatter.vars.xAxis );
+
+        progress.scatter.vars.svg.append('g')
+          .attr('class', 'axis')
+          .attr('transform', 'translate(' + progress.scatter.vars.padding + ',0)')
+          .call( progress.scatter.vars.yAxis );
+
         // actually add the data here
         progress.scatter.vars.svg.selectAll('circle')
           .data( progress.scatter.vars.data)
@@ -437,19 +447,8 @@ progress = function() {
           .attr('cy', function(d) {
             return progress.scatter.vars.yScale(d.mark);
           })
-          .attr('r', 4);
-
-        progress.scatter.vars.svg.append('g')
-          .attr('class', 'axis')
-          .attr('transform', 'translate(0,' + (progress.scatter.vars.height - progress.scatter.vars.padding) + ')')
-          .call( progress.scatter.vars.xAxis );
-
-        progress.scatter.vars.svg.append('g')
-          .attr('class', 'axis')
-          .attr('transform', 'translate(' + progress.scatter.vars.padding + ',0)')
-          .call( progress.scatter.vars.yAxis );
-
-        // finally generate the axis after all the data so it appears on top
+          .attr('r', 4)
+          .attr('class', 'scatterData');
 
 
       },
@@ -549,7 +548,7 @@ progress = function() {
           });
 
         // try reduce the inital bounce
-        forwardAlpha(progress.force.vars.force, 0.03);
+        forwardAlpha(progress.force.vars.force, 0.01);
 
         progress.force.vars.force.on('tick', function() {
           link.attr('x1', function(d) { return d.source.x; })
