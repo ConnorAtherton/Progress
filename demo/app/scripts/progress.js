@@ -355,7 +355,7 @@ progress = function() {
     progress.scatter = {
 
       vars: {
-        data: null,
+        data: {},
         svg: null,
         width: 670,
         height: 550,
@@ -376,7 +376,7 @@ progress = function() {
         var self = progress.scatter;
 
         // build scatter data
-        self.vars.data = self.formatData('overall');
+        self.vars.data.overall = self.formatData('overall');
 
         // build scatter list of modules
         self.populateModules();
@@ -423,7 +423,7 @@ progress = function() {
           .attr("height", progress.scatter.vars.height);
 
         progress.scatter.vars.xScale = d3.scale.ordinal()
-          .domain( progress.scatter.vars.data.map( function(d) { return d.name }))
+          .domain( progress.scatter.vars.data.overall.map( function(d) { return d.name }))
           .rangePoints([progress.scatter.vars.padding, progress.scatter.vars.width - (progress.scatter.vars.padding)]);
 
         progress.scatter.vars.yScale = d3.scale.linear()
@@ -454,7 +454,7 @@ progress = function() {
 
         // actually add the data here
         progress.scatter.vars.svg.selectAll('circle')
-          .data( progress.scatter.vars.data)
+          .data( progress.scatter.vars.data.overall )
           .enter()
           .append('circle')
           .attr('cx', function(d) {
@@ -501,7 +501,7 @@ progress = function() {
           .attr("fill", function(d) { return "none"; }) /*new*/
           .attr("stroke-width", function(d) { return "1.5px"; }) /*new*/
           .attr("stroke", function(d) { return "#666"; }) /*new*/
-          .attr('d', progress.scatter.vars.line(progress.scatter.vars.data))
+          .attr('d', progress.scatter.vars.line(progress.scatter.vars.data.overall))
           .attr('class', 'scatterLine');
 
       },
@@ -516,7 +516,7 @@ progress = function() {
         progress.scatter.vars.scatterListEl.appendChild(tmpEl);
 
           // loop through data
-          progress.scatter.vars.data.forEach( function( value, index, array) {
+          progress.scatter.vars.data.overall.forEach( function( value, index, array) {
             var tmpEl = document.createElement('div');
             tmpEl.innerHTML = value.name;
             tmpEl.classList.add('scatterModule');
@@ -531,7 +531,7 @@ progress = function() {
       formatData: function(module) {
         var tmpData = [];
         var tmpObj = {};
-          
+
 
         progress.data.forEach( function( value, index, array ) {
           tmpObj = {'name': value.name, 'mark': value.overallMark}
