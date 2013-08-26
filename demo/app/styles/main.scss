@@ -16,8 +16,25 @@
 @import "pie.scss";
 @import "force.scss";
 @import "scatter.scss";
+@import "type.scss";
 
-#main 
+#progress
+{
+	width: 900px;
+	margin: auto;
+}
+
+#content
+{
+	overflow-x: hidden;
+}
+
+.slideWrap
+{
+	float: left;
+}
+
+.slide
 {
 	background-color: white;
 	margin: 50px auto;

@@ -35,6 +35,8 @@ progress = function() {
       var id = el.getAttribute('data-user-id');
       if ( id.trim() === 'undefined' || id.trim() === '' ) throw new Error('A user id cannot be undefined or empty');
 
+      el.setAttribute('id', 'progress');
+
       // get data from url 
       getData( url, id );
 
@@ -46,7 +48,7 @@ progress = function() {
         drawn: false,
         status: 'marks',
         svgWidth : 750,
-        pieWidth: 184,
+        pieWidth: 180,
         pieHeight : 180,
         outerRadius : 75,
         innerRadius: 70,
@@ -81,7 +83,7 @@ progress = function() {
           **/
           
           progress.pie.vars.clickTarget = document.createElement('div');
-          progress.pie.vars.clickTarget.setAttribute('id', 'pieClick');
+          progress.pie.vars.clickTarget.classList.add('btn');
           progress.pie.vars.clickTarget.setAttribute('data-update', 'weights');
           progress.pie.vars.clickTarget.innerHTML = 'Show Weights';
           progress.pie.vars.pieEl.appendChild( progress.pie.vars.clickTarget );
@@ -358,7 +360,7 @@ progress = function() {
         data: {},
         svg: null,
         circles: null,
-        width: 670,
+        width: 650,
         height: 550,
         padding: 35,
         scatterEl: document.createElement('div'),
@@ -435,6 +437,8 @@ progress = function() {
         progress.scatter.vars.xScale
           .domain( d.map( function(d) { return d.name }))
 
+        progress.scatter.createLine(d);
+
         // Update x-axis values
         progress.scatter.vars.svg.select(".x.axis")
             .transition()
@@ -453,29 +457,16 @@ progress = function() {
              return progress.scatter.vars.yScale(d.mark);
            });
 
-        // enter selections
-        progress.scatter.vars.circles
-          .data(d)
-          .enter()
-          .append('circle')
-          .transition()
-          .duration(5000)
-          .attr('cx', function(d) {
-            console.log('in here');
-            return progress.scatter.vars.xScale(d.name);
-          })
-          .attr('cy', function(d) {
-            return progress.scatter.vars.yScale(d.mark);
-          })
-          .attr('r', 4)
-          .attr('class', 'scatterData');
-
+        // enter selection
         progress.scatter.vars.svg.selectAll("circle")
           .data(d)
           .enter()
           .append('circle')
+          .attr('fill', function(d) { return '#fff'})
+          .transition()
+          .duration(500)
+          .attr('fill', '#f7505a')
           .attr('cx', function(d) {
-            console.log('in here');
             return progress.scatter.vars.xScale(d.name);
           })
           .attr('cy', function(d) {
@@ -488,9 +479,10 @@ progress = function() {
         progress.scatter.vars.svg.selectAll("circle")
           .data(d)
           .exit()
-          .remove();
-
-        progress.scatter.createLine(d);
+          .transition()
+                .duration(250)
+                .style("fill-opacity", 1e-6)
+                .remove();
            
       },
 
@@ -577,9 +569,13 @@ progress = function() {
         // create a group element for the line
         progress.scatter.vars.line = progress.scatter.vars.linegroup
           .append('svg:path')
+          .attr('stroke', function(d) { return '#ffffff'; })
+          .transition()
+          .duration(500)
           .attr("fill", function(d) { return "none"; })
           .attr("stroke-width", function(d) { return "1.5px"; }) 
           .attr("stroke", function(d) { return "#666"; })
+          .attr("z-index", function() { return -100 })
           .attr('d', progress.scatter.vars.line(data))
           .attr('class', 'scatterLine');
 
@@ -648,12 +644,12 @@ progress = function() {
         data: {},
         svg: null,
         tooltip: null,
-        width: 920,
+        width: 900,
         height: 550,
         forceEl: document.createElement('div'),
         charge: -120,
         friction: 0.8,
-        distance: 45
+        distance: 50
       },
 
       show: function() {
@@ -673,6 +669,7 @@ progress = function() {
         // store d3 force layout in a force variables for reuse
         progress.force.vars.force = d3.layout.force()
           .charge(progress.force.vars.charge)
+          .linkDistance(35)
           .friction(progress.force.vars.friction)
           .distance(progress.force.vars.distance)
           .size([ progress.force.vars.width, progress.force.vars.height ]);

@@ -18,15 +18,36 @@
         <!-- endbuild -->
     </head>
     <body>
+        
+        <div id="content">
 
-        <div id="main" class="row">
-            <div class="row">
-                <section id="data" data-user-id="concon" class="columns small-12"></section>
-            </div>    
+            <div class="slideWrap" id="firstSlide">
+                <div class="row slide text-center">
+                    <h1>Progress</h1>
+                    <h2>The new way to view grades on the web</h2>
+                    <a href="#secondSlide" class="btn">Second Slide</a>
+                </div>    
+            </div>
+
+            <div class="slideWrap" id="secondSlide">
+                <div class="row slide">
+                    <p>second slide</p>
+                    <a href="#thirdSlide" class="btn">Third Slide</a>
+                </div>    
+            </div>
+
+            <div class="slideWrap" id="thirdSlide">
+                <div class="row slide">
+                    <section id="data" data-user-id="concon" class="columns small-12"></section>
+                </div>    
+            </div>
+
         </div>
 
         <!-- build:js scripts/main.js -->
         <script src="scripts/d3.local.js"></script>
+        <script src="bower_components/jquery/jquery.min.js"></script>
+        <script src="scripts/demo.js"></script>
         <script src="scripts/progress.js"></script>
         <script>
             progress.init('data', 'data/jordan.json');

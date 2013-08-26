@@ -6,8 +6,8 @@
 
 #progressScatter
 {
-	width: 100%;
-	height: 650px;
+	width: 900px;
+	height: auto;
 }
 
 /**
@@ -71,6 +71,7 @@
 	width: 50%;
 	float: left;
 	text-align: center;
+	margin: 50px 0;
 }
 
 /**
@@ -94,13 +95,15 @@
 .scatterData
 {
 	fill: #f7505a;
+	z-index: 99;
 }
 
 .scatterline
 {
 	fill: none;
 	stroke-width: 2px;
-	stroke: #666;	
+	stroke: #666;
+	z-index: -2;	
 }
 
 

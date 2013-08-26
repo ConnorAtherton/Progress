@@ -1,4 +1,4 @@
-#pieClick
+.btn
 {	
 	height: 60px;
 	line-height: 60px;
@@ -17,7 +17,7 @@
 	@include border-radius(3px);
 }
 
-#pieClick:hover
+.btn:hover
 {
 	top: 2px;
 	box-shadow: 0 3px #ab3c3c;
