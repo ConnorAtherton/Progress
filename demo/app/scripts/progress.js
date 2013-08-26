@@ -357,6 +357,7 @@ progress = function() {
       vars: {
         data: {},
         svg: null,
+        circles: null,
         width: 670,
         height: 550,
         padding: 35,
@@ -376,7 +377,7 @@ progress = function() {
         var self = progress.scatter;
 
         // build scatter data
-        self.vars.data.overall = self.formatData('overall');
+        self.formatData();
 
         // build scatter list of modules
         self.populateModules();
@@ -392,7 +393,7 @@ progress = function() {
         self.vars.scatterEl.appendChild( self.vars.scatterForecastPercentEl );
 
         // draw the axis and data on to the svg
-        progress.scatter.createScatterGraph([]);
+        progress.scatter.createScatterGraph();
 
         // append all elements to the scatter element before appending to page
         self.vars.scatterEl.appendChild( self.vars.scatterListEl );
@@ -410,9 +411,87 @@ progress = function() {
           // add the selected class to the clicked module
           this.classList.add('scatterCurrent');
 
+          if( this.innerHTML == 'Overall Modules')
+          {
+            progress.scatter.update(progress.scatter.vars.data.overall);
+          }
+          else
+          {
+            progress.scatter.update(progress.scatter.vars.data[this.innerHTML]);
+          }
+
         });
 
 
+      },
+
+      update: function(d) {
+
+        // remove the scatter line
+        d3.select('.scatterLine')
+          .remove();
+
+        // update x axis domain
+        progress.scatter.vars.xScale
+          .domain( d.map( function(d) { return d.name }))
+
+        // Update x-axis values
+        progress.scatter.vars.svg.select(".x.axis")
+            .transition()
+            .duration(300)
+            .call(progress.scatter.vars.xAxis);
+
+        // Update all circles
+        progress.scatter.vars.svg.selectAll("circle")
+           .data(d)
+           .transition()
+           .duration(500)
+           .attr('cx', function(d) {
+             return progress.scatter.vars.xScale(d.name);
+           })
+           .attr('cy', function(d) {
+             return progress.scatter.vars.yScale(d.mark);
+           });
+
+        // enter selections
+        progress.scatter.vars.circles
+          .data(d)
+          .enter()
+          .append('circle')
+          .transition()
+          .duration(5000)
+          .attr('cx', function(d) {
+            console.log('in here');
+            return progress.scatter.vars.xScale(d.name);
+          })
+          .attr('cy', function(d) {
+            return progress.scatter.vars.yScale(d.mark);
+          })
+          .attr('r', 4)
+          .attr('class', 'scatterData');
+
+        progress.scatter.vars.svg.selectAll("circle")
+          .data(d)
+          .enter()
+          .append('circle')
+          .attr('cx', function(d) {
+            console.log('in here');
+            return progress.scatter.vars.xScale(d.name);
+          })
+          .attr('cy', function(d) {
+            return progress.scatter.vars.yScale(d.mark);
+          })
+          .attr('r', 4)
+          .attr('class', 'scatterData');
+
+        // handle exit selections
+        progress.scatter.vars.svg.selectAll("circle")
+          .data(d)
+          .exit()
+          .remove();
+
+        progress.scatter.createLine(d);
+           
       },
 
       createScatterGraph: function() {
@@ -440,20 +519,20 @@ progress = function() {
           .ticks(10);
 
         progress.scatter.vars.svg.append('g')
-          .attr('class', 'axis')
+          .attr('class', 'x axis')
           .attr('transform', 'translate(0,' + (progress.scatter.vars.height - progress.scatter.vars.padding) + ')')
           .call( progress.scatter.vars.xAxis );
 
         progress.scatter.vars.svg.append('g')
-          .attr('class', 'axis')
+          .attr('class', 'y axis')
           .attr('transform', 'translate(' + progress.scatter.vars.padding + ',0)')
           .call( progress.scatter.vars.yAxis );
 
         // add the line going through the data points
-        progress.scatter.createLine();
+        progress.scatter.createLine(progress.scatter.vars.data.overall);
 
         // actually add the data here
-        progress.scatter.vars.svg.selectAll('circle')
+        progress.scatter.vars.circles = progress.scatter.vars.svg.selectAll('circle')
           .data( progress.scatter.vars.data.overall )
           .enter()
           .append('circle')
@@ -482,7 +561,7 @@ progress = function() {
 
       },
 
-      createLine: function() {
+      createLine: function(data) {
 
         progress.scatter.vars.line = d3.svg.line()
           .x( function(d) { 
@@ -498,10 +577,10 @@ progress = function() {
         // create a group element for the line
         progress.scatter.vars.line = progress.scatter.vars.linegroup
           .append('svg:path')
-          .attr("fill", function(d) { return "none"; }) /*new*/
-          .attr("stroke-width", function(d) { return "1.5px"; }) /*new*/
-          .attr("stroke", function(d) { return "#666"; }) /*new*/
-          .attr('d', progress.scatter.vars.line(progress.scatter.vars.data.overall))
+          .attr("fill", function(d) { return "none"; })
+          .attr("stroke-width", function(d) { return "1.5px"; }) 
+          .attr("stroke", function(d) { return "#666"; })
+          .attr('d', progress.scatter.vars.line(data))
           .attr('class', 'scatterLine');
 
       },
@@ -509,7 +588,7 @@ progress = function() {
       populateModules: function() {
 
         var tmpEl = document.createElement('div');
-        tmpEl.innerHTML = 'Overall modules';
+        tmpEl.innerHTML = 'Overall Modules';
         tmpEl.classList.add('scatterModule');
         tmpEl.classList.add('scatterCurrent');
         // append the module to the list in the DOM
@@ -528,17 +607,37 @@ progress = function() {
 
       },
 
-      formatData: function(module) {
-        var tmpData = [];
-        var tmpObj = {};
+      formatData: function() {
 
+        progress.scatter.vars.data.overall = [];
 
-        progress.data.forEach( function( value, index, array ) {
-          tmpObj = {'name': value.name, 'mark': value.overallMark}
-          tmpData.push(tmpObj)
+        progress.data.forEach( function( value ) {
+
+          // add the module name and overall mark to date in the overall array
+          var tmpObj = {'name': value.name, 'mark': value.overallMark}
+          progress.scatter.vars.data.overall.push(tmpObj)
+
+          // create a new array in data object for this module
+          progress.scatter.vars.data[value.name] = [];
+
+          var tmpNames = [];
+          var tmpMarks = [];
+
+          value.work.names.forEach( function(work) {
+            tmpNames.push(work);
+          });
+
+          value.work.marks.forEach( function(marks) {
+            tmpMarks.push(marks);
+          });
+
+          for (var i = 0; i < tmpMarks.length; i++) {
+            var tmpObj = {'name': tmpNames[i], 'mark': tmpMarks[i]}
+            progress.scatter.vars.data[value.name].push(tmpObj);
+          };
+
         }, this);
 
-        return tmpData;
       }
 
     }
@@ -655,7 +754,7 @@ progress = function() {
             arrayPos++;
 
             // loop through assesment names and link them to their parent module
-            progress.data[module].work.names.forEach( function(workName, index, array ) {
+            progress.data[module].work.names.forEach( function(workName) {
 
               tmpObj['nodes'].push({'name': workName, 'group': i});
               tmpObj['links'].push({'source': arrayPos, 'target': currentParentNode});
