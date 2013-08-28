@@ -26,11 +26,11 @@
 
 // colour scheme for overall marks pie
 
-.progressPieMarks path:nth-child(1)
+.progressPieMarks path:nth-of-type(1)
 {
 	fill: #f7505a;
 }
-.progressPieMarks path:nth-child(2)
+.progressPieMarks path:nth-of-type(2)
 {
 	fill: #e1e1e1;
 	pointer-events: none;
@@ -38,31 +38,45 @@
 
 // colour scheme for overall marks pie
 
-.progressPieWeights path:nth-child(1)
+.progressPieWeights path:nth-of-type(1)
 {
 	fill: #f7505a;
 }
 
-.progressPieWeights path:nth-child(2)
+.progressPieWeights path:nth-of-type(2)
 {
-	fill: #009999;
+	fill: #3ab7ef;
 }
 
-.progressPieWeights path:nth-child(3)
+.progressPieWeights path:nth-of-type(3)
 {
-	fill: #ff7400;
+	fill: #37EC15;
 }
 
-.progressPieWeights path:nth-child(4)
+.progressPieWeights path:nth-of-type(4)
 {
-	fill: #00c322;
+	fill: #ffc600;
 }
 
-.progressPieWeights path:nth-child(5)
+.progressPieWeights path:nth-of-type(5)
 {
 	fill: #cd35d3;
 }
 
+.progressPieWeights path:nth-of-type(6)
+{
+	fill: #ff7400;
+}
+
+.progressPieWeights path:nth-of-type(7)
+{
+	fill: #911911;
+}
+
+.progressPieWeights path:nth-of-type(8)
+{
+	fill: #aec7e8;
+}
 
 
 

@@ -1,9 +1,14 @@
+
 $(document).ready(function() {
+
+	// find container and hide it
+	var $container = $('#content');
+	$container.hide();
 
 	// store dom variables
 	var $slide = $('.slide');
-	var $container = $('#content');
 	var $slideWrap = $('.slideWrap');
+	var showLoad = false;
 
 	// calculate the length and width of window to get what the width should be
 	var numSlides = $slide.length;
@@ -20,6 +25,9 @@ $(document).ready(function() {
 		'width': windowWidth
 	});
 
+	// safe to show the container now
+	$container.fadeIn(150);
+
 	// capture the click event on the links and navigate to correct slide
 	$slide.children('a').on('click', function(e) {
 
@@ -34,6 +42,15 @@ $(document).ready(function() {
 		 	scrollLeft: $(href).offset().left
 		}, 300);
 
+		if(!showLoad && href === '#thirdSlide') {
+			showLoad = true;
+			loadProgress();
+		}
+
 	});
+
+	var loadProgress = function() {
+		console.log('loading....');
+	}
 
 });

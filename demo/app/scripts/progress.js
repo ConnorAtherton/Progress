@@ -286,7 +286,6 @@ progress = function() {
 
       showOverallMarks: function() {
 
-        var color = d3.scale.category20();
         var pie = d3.layout.pie().sort(null);
 
         var pieData = [];
@@ -307,7 +306,6 @@ progress = function() {
           .data(function(d, i){ return pie(d) })
           .enter().append('path')
             .attr('transform', 'translate(' + (progress.pie.vars.pieWidth / 2) + ', ' + (progress.pie.vars.pieHeight / 2) + ')');
-
         progress.pie.vars.paths.transition()
             .ease('linear')
              .duration(5000)
@@ -332,7 +330,7 @@ progress = function() {
         var i = 0;
         while(i < moduleNames.length) {
 
-          // create a new text element and append a text node inside it
+          // create text element and append a text node inside that
           // with the correct module name
           var textEl = document.createElementNS(svgns, 'text'),
           textNode = document.createTextNode( moduleNames[i] );
@@ -342,10 +340,9 @@ progress = function() {
           textEl.setAttribute('transform', 'translate(' + (progress.pie.vars.pieWidth / 2) + ', ' + (progress.pie.vars.pieHeight / 2) + ')');
           textEl.setAttribute('text-anchor', 'middle');
           textEl.setAttribute('alignment-baseline', 'middle');
-          textEl.classList.add('moduleName');
 
           // finally append it to the svg element
-          svgs[i].appendChild(textEl);
+          svgs[i].insertBefore(textEl, svgs[i].firstChild);
       
           i++;
         }
@@ -463,6 +460,12 @@ progress = function() {
           .enter()
           .append('circle')
           .attr('fill', function(d) { return '#fff'})
+          .attr('cx', function(d) {
+            return progress.scatter.createRandomPoint();
+          })
+          .attr('cy', function(d) {
+            return progress.scatter.createRandomPoint();
+          })
           .transition()
           .duration(500)
           .attr('fill', '#f7505a')
@@ -634,6 +637,10 @@ progress = function() {
 
         }, this);
 
+      },
+
+      createRandomPoint: function() {
+        return Math.floor(Math.random() * progress.scatter.vars.height);
       }
 
     }
@@ -707,7 +714,7 @@ progress = function() {
           });
 
         // try reduce the inital bounce
-        forwardAlpha(progress.force.vars.force, 0.01);
+        forwardAlpha(progress.force.vars.force, 0.2);
 
         progress.force.vars.force.on('tick', function() {
           link.attr('x1', function(d) { return d.source.x; })
