@@ -1,3 +1,4 @@
+$('#content').hide();
 
 $(document).ready(function() {
 
@@ -26,7 +27,7 @@ $(document).ready(function() {
 	});
 
 	// safe to show the container now
-	$container.fadeIn(150);
+	$container.fadeIn(550);
 
 	// capture the click event on the links and navigate to correct slide
 	$slide.children('a').on('click', function(e) {

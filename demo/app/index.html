@@ -9,7 +9,7 @@
         <title></title>
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width">
-        <!-- <link href="http://fonts.googleapis.com/css?family=Source+Sans+Pro|Open+Sans:400,300" rel="stylesheet" type="text/css"> -->
+        <link href="http://fonts.googleapis.com/css?family=Source+Sans+Pro|Open+Sans:400,300" rel="stylesheet" type="text/css">
         <!-- build:css({.tmp,app}) styles/main.css -->
         <link rel="stylesheet" href="styles/main.css">
         <!-- endbuild -->
@@ -30,14 +30,15 @@
             </div>
 
             <div class="slideWrap" id="secondSlide">
-                <div class="row slide">
-                    <p>second slide</p>
+                <div class="row slide text-center">
+                    <h1>The way grades used to look</h1>
                     <a href="#thirdSlide" class="btn">Third Slide</a>
                 </div>    
             </div>
 
             <div class="slideWrap" id="thirdSlide">
-                <div class="row slide">
+                <div class="row slide text-center">
+                    <h1>The way they look now</h1>
                     <section id="data" data-user-id="concon" class="columns small-12"></section>
                 </div>    
             </div>
@@ -51,7 +52,7 @@
         <script src="scripts/d3.local.js"></script>
         <script src="scripts/progress.js"></script>
         <script>
-            progress.init('data', 'data/connor.json');
+            progress.init('data', 'data/jordan.json');
         </script>
         <!-- endbuild -->
 
