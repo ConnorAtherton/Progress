@@ -369,6 +369,7 @@ progress = function() {
         xAxis: null,
         yAxis: null,
         line: null,
+        tooltip: null
       },
 
       show: function() {
@@ -393,6 +394,13 @@ progress = function() {
 
         // draw the axis and data on to the svg
         progress.scatter.createScatterGraph();
+
+        // create the tooltip, hide it and append it to the dom
+        progress.scatter.vars.tooltip = document.createElement('div');
+        progress.scatter.vars.tooltip.setAttribute('id', 'scatterTooltip');
+        progress.scatter.vars.tooltip.classList.add('tooltip');
+        progress.scatter.vars.tooltip.style.display = 'none';
+        document.body.appendChild( progress.scatter.vars.tooltip );
 
         // append all elements to the scatter element before appending to page
         self.vars.scatterEl.appendChild( self.vars.scatterListEl );
@@ -419,6 +427,15 @@ progress = function() {
             progress.scatter.update(progress.scatter.vars.data[this.innerHTML]);
           }
 
+        });
+
+        // listen for hovers
+        progress.scatter.vars.circles.on('mouseover', function (d) {
+          progress.scatter.showTooltip(d);
+        });
+
+        progress.scatter.vars.circles.on('mouseout', function (d) {
+          progress.scatter.removeTooltip();
         });
 
 
@@ -455,7 +472,7 @@ progress = function() {
            });
 
         // enter selection
-        progress.scatter.vars.svg.selectAll("circle")
+        progress.scatter.vars.circles = progress.scatter.vars.svg.selectAll("circle")
           .data(d)
           .enter()
           .append('circle')
@@ -479,13 +496,23 @@ progress = function() {
           .attr('class', 'scatterData');
 
         // handle exit selections
-        progress.scatter.vars.svg.selectAll("circle")
+        progress.scatter.vars.circles = progress.scatter.vars.svg.selectAll("circle")
           .data(d)
           .exit()
           .transition()
                 .duration(250)
                 .style("fill-opacity", 1e-6)
                 .remove();
+        
+        // listen for hovers
+        progress.scatter.vars.svg.selectAll("circle").on('mouseover', function (d) {
+          progress.scatter.showTooltip(d);
+        });
+
+       progress.scatter.vars.svg.selectAll("circle").on('mouseout', function (d) {
+          progress.scatter.removeTooltip();
+        });
+
            
       },
 
@@ -641,7 +668,38 @@ progress = function() {
 
       createRandomPoint: function() {
         return Math.floor(Math.random() * progress.scatter.vars.height);
-      }
+      },
+
+      showTooltip: function(data) {
+
+        var coords = d3.mouse(document.body);
+
+        // add initial inline styles
+        progress.scatter.vars.tooltip.style.position = 'absolute';
+        progress.scatter.vars.tooltip.style.left = (coords[0] - 50 )+ 'px';
+        progress.scatter.vars.tooltip.style.top = (coords[1] + 15) + 'px';
+
+        // set the inner html to the module name
+        progress.scatter.vars.tooltip.innerHTML = data.mark + '%';
+
+        // show the tooltip on the page
+        progress.scatter.vars.tooltip.style.display = 'inline';
+
+      },
+
+      removeTooltip: function() {
+
+        // hide the tooltip from the page
+        progress.scatter.vars.tooltip.style.display = 'none';
+
+        // reset the tooltip coords
+        progress.scatter.vars.tooltip.style.left = 0;
+        progress.scatter.vars.tooltip.style.top = 0;
+
+        // reset d3.event so we can register other events
+        d3.event = '';
+
+      },
 
     }
 

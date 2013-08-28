@@ -17,9 +17,10 @@
 	@include border-radius(3px);
 }
 
-.btn:hover
+.btn:hover, a:hover
 {
 	top: 2px;
 	box-shadow: 0 3px #ab3c3c;
 	cursor: pointer;
+	color: white;
 }
