@@ -17,6 +17,7 @@
 @import "force.scss";
 @import "scatter.scss";
 @import "type.scss";
+@import "table.scss";
 
 #progress
 {
@@ -39,6 +40,8 @@
 	background-color: white;
 	margin: 50px auto;
 	padding: 40px;
+	min-height: 500px;
+	position: relative;
 
 	@include border-radius(3px);
 	@include box-shadow(rgba(0, 0, 0, 0.4) 0px 2px 6px);

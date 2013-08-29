@@ -415,16 +415,34 @@ progress = function() {
           var selected = d3.select('.scatterCurrent')[0][0];
           selected.classList.remove('scatterCurrent');
 
+          var mark = undefined;
+
           // add the selected class to the clicked module
           this.classList.add('scatterCurrent');
 
           if( this.innerHTML == 'Overall Modules')
           {
             progress.scatter.update(progress.scatter.vars.data.overall);
+            // work out the overall based on some normalization method
+            console.log(progress.scatter.vars.data.overall);
           }
           else
           {
             progress.scatter.update(progress.scatter.vars.data[this.innerHTML]);
+            progress.scatter.updateCurrentPercent(progress.scatter.vars.data[this.innerHTML].overall);
+
+           for(var count = 0; count < progress.scatter.vars.data.overall.length; count++) {
+
+              if(progress.scatter.vars.data.overall[count].name === this.innerHTML) {
+                mark = progress.scatter.vars.data.overall[count].mark;
+                break;
+              }
+
+            }
+
+            console.log(typeof mark);
+            if(typeof mark !== undefined) progress.scatter.updateCurrentPercent(mark);
+
           }
 
         });
@@ -639,9 +657,12 @@ progress = function() {
 
         progress.data.forEach( function( value ) {
 
+          var name = value.name;
+          var overall = value.overallMark;
+
           // add the module name and overall mark to date in the overall array
           var tmpObj = {'name': value.name, 'mark': value.overallMark}
-          progress.scatter.vars.data.overall.push(tmpObj)
+          progress.scatter.vars.data.overall.push(tmpObj);
 
           // create a new array in data object for this module
           progress.scatter.vars.data[value.name] = [];
@@ -700,6 +721,21 @@ progress = function() {
         d3.event = '';
 
       },
+
+      updateCurrentPercent: function(current) {
+
+        console.log(current);
+
+        progress.scatter.vars.scatterCurrentPercentEl.innerHTML = '<h2>Current Percentage</h2>';
+
+        // create a div element containing current mark
+        var curEl = document.createElement('div');
+        curEl.setAttribute('id', 'currentMark');
+        curEl.innerHTML = current + '<span class="percent">%</span>';
+
+        progress.scatter.vars.scatterCurrentPercentEl.appendChild(curEl);
+
+      }
 
     }
 
