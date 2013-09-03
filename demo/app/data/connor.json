@@ -1,105 +1,181 @@
 [{
-	"name" : "MATH210",
+	"name" : "GEOG201",
 	"work" : {
-		"assessment1" : {
-			"mark" : 58,
-			"weight" : 25
+		"Group CW" : {
+			"mark" : 80,
+			"weight" : 30
 		},
-		"assessment2" : {
-			"mark" : 58,
-			"weight" : 25
+		"Individual CW" : {
+			"mark" : 40,
+			"weight" : 30
 		},
-		"assessment3" : {
-			"mark" : 58,
-			"weight" : 25
-		},
-		"assessment4" : {
-			"mark" : 58,
-			"weight" : 25
+		"Exam" : {
+			"mark" : 40,
+			"weight" : 40
 		}
 	},
-	"overallMark" : 50
+	"overallMark" : 52,
+	"weight" : 15
 },
 {
-	"name" : "MATH215",
+	"name" : "GEOG202",
 	"work" : {
-		"assessment1" : {
-			"mark" : 54,
-			"weight" : 10
-		},
-		"assessment2" : {
-			"mark" : 31,
-			"weight" : 80
-		},
-		"assessment3" : {
-			"mark" : 51,
-			"weight" : 10
+		"Exam" : {
+			"mark" : 67,
+			"weight" : 100
 		}
 
 	},
-	"overallMark" : 36
+	"overallMark" : 67,
+	"weight" : 15
 },
 {
-	"name" : "MATH220",
+	"name" : "GEOG203",
 	"work" : {
-		"assessment1" : {
+		"CW1 Lab Exercise" : {
 			"mark" : 65,
-			"weight" : 40
+			"weight" : 30
 		},
-		"assessment2" : {
-			"mark" : 65,
+		"CW2 Assignment" : {
+			"mark" : 45,
+			"weight" : 30
+		},
+		"CW3 Assignment" : {
+			"mark" : 86,
 			"weight" : 60
 		}
 	},
-	"overallMark" : 95
+	"overallMark" : 70,
+	"weight" : 15
 },
 {
-	"name" : "MATH225",
+	"name" : "GEOG204",
 	"work" : {
-		"assessment1" : {
-			"mark" : 72,
-			"weight" : 5
+		"Practial 1" : {
+			"mark" : 55,
+			"weight" : 40
 		},
-		"assessment2" : {
-			"mark" : 61,
-			"weight" : 85
+		"Practial 2" : {
+			"mark" : 55,
+			"weight" : 10
 		},
-		"assessment1" : {
-			"mark" : 63,
-			"weight" : 5
+		"Practial 3" : {
+			"mark" : 55,
+			"weight" : 10
 		},
-		"assessment1" : {
-			"mark" : 45,
-			"weight" : 5
+		"Exam" : {
+			"mark" : 65,
+			"weight" : 40
 		}
 	},
-	"overallMark" : 63
+	"overallMark" : 61,
+	"weight" : 15
 },
 {
-	"name" : "MATH235",
+	"name" : "GEOG205",
 	"work" : {
-		"assessment1" : {
-			"mark" : 58,
-			"weight" : 80
+		"CW1" : {
+			"mark" : 90,
+			"weight" : 10
 		},
-		"assessment2" : {
+		"CW2" : {
+			"mark" : 62,
+			"weight" : 10
+		},
+		"Exam 1" : {
+			"mark" : 47,
+			"weight" : 80
+		}
+	},
+	"overallMark" : 53,
+	"weight" : 15
+},
+{
+	"name" : "GEOG206",
+	"work" : {
+		"Dissertation" : {
+			"mark" : 40,
+			"weight" : 50
+		},
+		"Dissertation 2" : {
+			"mark" : 78,
+			"weight" : 50
+		}
+	},
+	"overallMark" : 50,
+	"weight" : 30
+},
+{
+	"name" : "GEOG209",
+	"work" : {
+		"Dissertation" : {
+			"mark" : 75,
+			"weight" : 20
+		},
+		"Group CW" : {
 			"mark" : 80,
+			"weight" : 20
+		},
+		"Individual CW" : {
+			"mark" : 60,
+			"weight" : 20
+		},
+		"Practial 1" : {
+			"mark" : 23,
+			"weight" : 20
+		},
+		"Exam" : {
+			"mark" : 13,
 			"weight" : 20
 		}
 	},
-	"overallMark" : 73
+	"overallMark" : 59,
+	"weight" : 30
 },
 {
-	"name" : "MATH295",
+	"name" : "GEOG210",
 	"work" : {
-		"assessment1" : {
-			"mark" : 58,
-			"weight" : 80
+		"Dissertation" : {
+			"mark" : 50,
+			"weight" : 10
 		},
-		"assessment2" : {
+		"Group CW" : {
 			"mark" : 80,
-			"weight" : 20
+			"weight" : 10
+		},
+		"Individual CW" : {
+			"mark" : 40,
+			"weight" : 10
+		},
+		"Practial 1" : {
+			"mark" : 55,
+			"weight" : 10
+		},
+		"Exam" : {
+			"mark" : 40,
+			"weight" : 10
+		},
+		"Dissertation" : {
+			"mark" : 50,
+			"weight" : 10
+		},
+		"Group CW" : {
+			"mark" : 80,
+			"weight" : 10
+		},
+		"Air hockey" : {
+			"mark" : 40,
+			"weight" : 10
+		},
+		"team display" : {
+			"mark" : 55,
+			"weight" : 10
+		},
+		"Courework 3" : {
+			"mark" : 40,
+			"weight" : 10
 		}
 	},
-	"overallMark" : 73
+	"overallMark" : 34,
+	"weight" : 30
 }]

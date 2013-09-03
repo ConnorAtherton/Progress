@@ -30,7 +30,8 @@
 #scatterListElement
 {
 	width: 250px;
-	height: 560px;
+	height: 514px;
+	margin: 20px 0;
 	float: left;
 	background-color: #e8e8e8;
 	text-align: center;
@@ -67,7 +68,7 @@
 
 #scatterCurrentElement, #scatterForecastElement
 {
-	height: 100px;
+	height: 200px;
 	width: 50%;
 	float: left;
 	text-align: center;
@@ -104,6 +105,11 @@
 	stroke-width: 2px;
 	stroke: #666;
 	z-index: -2;	
+}
+
+#currentMark
+{
+	font-size: 35px;
 }
 
 

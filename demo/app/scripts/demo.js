@@ -69,6 +69,8 @@ $(document).ready(function() {
 
 		for(var module in data) {
 
+			if (data.hasOwnProperty(module) ) {
+
 			var tr = document.createElement('tr');
 			tr.classList.add('oldModule');
 
@@ -90,18 +92,58 @@ $(document).ready(function() {
 			// append the tr to the table element
 			tbody.appendChild(tr);
 
+			var i = 0;
+
 			// now loop over each modules pieces of work and append those
 			for(var work in data[module]) {
-				var tmpWork, tmpWeights, tmpMarks;
 
-				console.log(data[module][work].names);
-				console.log(data[module][work].weights);
-				console.log(data[module][work].marks);
+				if (data[module].hasOwnProperty(work) && typeof data[module].work !== undefined) {
 
-				// for (var i = 0; i < data[module][work].marks.length; i++) {
-				// 	// console.log(data[module][work][mark][i]);
-				// };
+				var tmpNames, tmpWeights, tmpMarks;
+
+				if(typeof data[module][work].names !== undefined) {
+					tmpNames = data[module].work.names.map(function(value) {
+						return value;
+					});
+				}
+
+				if(typeof data[module][work].weights !== undefined) {
+					tmpWeights = data[module].work.weights.map(function(value) {
+						return value;
+					});
+				}
+
+				if(typeof data[module][work].marks !== undefined) {
+					tmpMarks = data[module].work.marks.map(function(value) {
+						return value;
+					});
+				}
+
+				for(var i = 0; i < tmpNames.length; i++) {
+					var tr = document.createElement('tr');
+
+					var tdName = document.createElement('td');
+					tdName.innerHTML = tmpNames[i];
+					var tdWeight = document.createElement('td');
+					tdWeight.innerHTML = tmpWeights[i];
+					var tdMark = document.createElement('td');
+					tdMark.innerHTML =tmpWeights[i] + '%';
+
+					// append to the tr
+					tr.appendChild(tdName);
+					tr.appendChild(tdWeight);
+					tr.appendChild(tdMark);
+
+					tbody.appendChild(tr);
+
+					i++;
+				}
+			
 			}
+
+		}
+
+		}
 
 		}
 

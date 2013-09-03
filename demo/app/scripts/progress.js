@@ -1,12 +1,13 @@
 progress = function() {
     'use strict';
 
-      var progress = {
+    var progress = {
       version: '0.0.1',
       data: 'Haven\'t received any data yet'
     };
 
-    var el;
+    var globalElement,
+        tooltip = tooltip = document.createElement('div');
 
     /**
     *
@@ -22,7 +23,7 @@ progress = function() {
       if( arguments.length === 0 ) throw new TypeError('Function expects two parameters, none given.');
       // error check for arguments of length 1
 
-      typeof element === 'string' ? el = document.getElementById( element ) : el = element;
+      typeof element === 'string' ? globalElement = document.getElementById( element ) : globalElement = element;
       
       /**
       
@@ -32,13 +33,16 @@ progress = function() {
       **/
       
       // store it, maybe use it for later 
-      var id = el.getAttribute('data-user-id');
+      var id = globalElement.getAttribute('data-user-id');
       if ( id.trim() === 'undefined' || id.trim() === '' ) throw new Error('A user id cannot be undefined or empty');
 
-      el.setAttribute('id', 'progress');
+      globalElement.setAttribute('id', 'progress');
 
       // get data from url 
       getData( url, id );
+
+      // create a tooltip to use later in the graphs
+      createTooltip();
 
     }
 
@@ -57,7 +61,6 @@ progress = function() {
         svg: null,
         text: null,
         clickTarget: null,
-        tooltip: null,
         startValue: {startAngle: 6.28, endAngle: 0}
       },
 
@@ -103,18 +106,11 @@ progress = function() {
           // Append created DOM element to the element used for the plugin.
           progress.pie.vars.pieEl.setAttribute('id', 'progressPie');
           progress.pie.vars.pieEl.classList.add('progressPieMarks');
-          el.appendChild( progress.pie.vars.pieEl );
+          globalElement.appendChild( progress.pie.vars.pieEl );
 
           // Show the initial state of the pie charts and add the module names.
           progress.pie.showOverallMarks();
           progress.pie.showModuleNames();
-
-          // create the tooltip, hide it and append it to the dom
-          progress.pie.vars.tooltip = document.createElement('div');
-          progress.pie.vars.tooltip.setAttribute('id', 'pieTooltip');
-          progress.pie.vars.tooltip.classList.add('tooltip');
-          progress.pie.vars.tooltip.style.display = 'none';
-          document.body.appendChild( progress.pie.vars.tooltip );
 
           // add an event listener to each path
           d3.selectAll('path').on('mouseover', function(d, i) {
@@ -122,19 +118,19 @@ progress = function() {
             // change the inner html depending on the data
             if(progress.pie.vars.status === 'marks')
             { 
-              progress.pie.vars.tooltip.innerHTML = 'Overall Mark: ' + d.value + '%';
+              tooltip.innerHTML = 'Overall Mark: ' + d.value + '%';
             }
             else
             {
-              progress.pie.vars.tooltip.innerHTML = 'Module weight: ' + d.value + '%';
+              tooltip.innerHTML = 'Module weight: ' + d.value + '%';
             }
 
-            progress.pie.showTooltip();
+            showTooltip();
           });
 
           // add an event listener to each path
           d3.selectAll('path').on('mouseout', function(d, i) {
-              progress.pie.removeTooltip();
+              removeTooltip();
           });
 
           progress.pie.vars.drawn = true;
@@ -143,34 +139,6 @@ progress = function() {
 
       hide: function() {
         console.log('hide the pie charts');
-      },
-
-      showTooltip: function() {
-
-        var coords = d3.mouse(document.body);
-
-        // add initial inline styles
-        progress.pie.vars.tooltip.style.position = 'absolute';
-        progress.pie.vars.tooltip.style.left = (coords[0] - 50 )+ 'px';
-        progress.pie.vars.tooltip.style.top = (coords[1] + 15) + 'px';
-
-        // show the tooltip on the page
-        progress.pie.vars.tooltip.style.display = 'inline';
-
-      },
-
-      removeTooltip: function() {
-
-        // hide the tooltip from the page
-        progress.pie.vars.tooltip.style.display = 'none';
-
-        // reset the tooltip coords
-        progress.pie.vars.tooltip.style.left = 0;
-        progress.pie.vars.tooltip.style.top = 0;
-
-        // reset d3.event so we can register other events
-        d3.event = '';
-
       },
 
       tweenPie: function(b) {
@@ -226,19 +194,19 @@ progress = function() {
             // change the inner html depending on the data
             if(progress.pie.vars.status === 'marks')
             { 
-              progress.pie.vars.tooltip.innerHTML = 'Overall Mark: ' + d.value + '%';
+              tooltip.innerHTML = 'Overall Mark: ' + d.value + '%';
             }
             else
             {
-              progress.pie.vars.tooltip.innerHTML = 'Module weight: ' + d.value + '%';
+              tooltip.innerHTML = 'Module weight: ' + d.value + '%';
             }
             
-            progress.pie.showTooltip(d, this);
+            showTooltip(d, this);
 
           });
 
         progress.pie.vars.paths.on('mouseout', function(d, i) {
-              progress.pie.removeTooltip();
+              removeTooltip();
           });
 
         // clear the container's class lits then update class to represent pie state
@@ -408,7 +376,7 @@ progress = function() {
         self.vars.scatterEl.appendChild( self.vars.scatterForecastPercentEl );
 
         // finally install the parent element to the page
-        el.appendChild( this.vars.scatterEl );
+        globalElement.appendChild( this.vars.scatterEl );
 
         d3.selectAll('.scatterModule').on('click' , function() {
           // find the currently selected module and remove it
@@ -440,7 +408,6 @@ progress = function() {
 
             }
 
-            console.log(typeof mark);
             if(typeof mark !== undefined) progress.scatter.updateCurrentPercent(mark);
 
           }
@@ -777,7 +744,7 @@ progress = function() {
 
         // create the svg element and store
         progress.force.vars.forceEl.setAttribute('id', 'progressForce');
-        el.appendChild( progress.force.vars.forceEl );
+        globalElement.appendChild( progress.force.vars.forceEl );
 
         progress.force.vars.svg = d3.select( progress.force.vars.forceEl ).append('svg')
           .attr('width', progress.force.vars.width)
@@ -1005,12 +972,51 @@ progress = function() {
       // create a temporary array
       var tmpArray = [];
 
-      progress.data.forEach(function(value, index, array) {
-        tmpArray.push(value.property);
+      progress.data.forEach(function(value) {
+        tmpArray.push(value[property]);
       });
 
       // return the array  
       return tmpArray;
+    }
+
+    function createTooltip( el ) {
+
+      // create the tooltip, hide it and append it to the dom
+      tooltip.setAttribute('id', 'pieTooltip');
+      tooltip.classList.add('tooltip');
+      tooltip.style.display = 'none';
+      document.body.appendChild( tooltip );
+
+    }
+
+    function showTooltip() {
+
+      var coords = d3.mouse(document.body);
+
+      // add initial inline styles
+      tooltip.style.position = 'absolute';
+      tooltip.style.left = (coords[0] - 50 )+ 'px';
+      tooltip.style.top = (coords[1] + 15) + 'px';
+
+      // show the tooltip on the page
+      tooltip.style.display = 'inline';
+
+    }
+
+
+    function removeTooltip() {
+
+      // hide the tooltip from the page
+      tooltip.style.display = 'none';
+
+      // reset the tooltip coords
+      tooltip.style.left = 0;
+      tooltip.style.top = 0;
+
+      // reset d3.event so we can register other events
+      d3.event = '';
+
     }
 
     /**
