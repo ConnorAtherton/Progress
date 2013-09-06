@@ -7,7 +7,7 @@ progress = function() {
     };
 
     var globalElement,
-        tooltip = tooltip = document.createElement('div');
+        tooltip = document.createElement('div');
 
     /**
     *

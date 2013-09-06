@@ -31,7 +31,24 @@ $(document).ready(function() {
 	$container.fadeIn(550);
 
 	// load the tabular data
-	loadOldWay(progress.data);
+	function loadTable() {
+
+		if (progress.data && typeof progress.data != 'undefined') {
+			// data is ready and willing to be modified
+			console.log('data is ready and willing to be modified');
+			loadOldWay(progress.data);
+			clearInterval();
+		}
+		else
+		{
+			// no data yet sir
+			console.log('no data yet sir');
+			setInterval(loadTable(), 300);
+		}
+
+	}
+
+	loadTable();
 
 	// capture the click event on the links and navigate to correct slide
 	$next.children('a').on('click', function(e) {
