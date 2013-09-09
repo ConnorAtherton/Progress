@@ -115,17 +115,20 @@ progress = function() {
           // add an event listener to each path
           d3.selectAll('path').on('mouseover', function(d, i) {
 
+            var data;
+
             // change the inner html depending on the data
             if(progress.pie.vars.status === 'marks')
             { 
-              tooltip.innerHTML = 'Overall Mark: ' + d.value + '%';
+              data = 'Overall Mark: ' + d.value + '%';
             }
             else
             {
-              tooltip.innerHTML = 'Module weight: ' + d.value + '%';
+              data = 'Module weight: ' + d.value + '%';
             }
 
-            showTooltip();
+            showTooltip(data);
+
           });
 
           // add an event listener to each path
@@ -142,9 +145,7 @@ progress = function() {
       },
 
       tweenPie: function(b) {
-        var arc = d3.svg.arc()
-                    .innerRadius(progress.pie.vars.innerRadius)
-                    .outerRadius(progress.pie.vars.outerRadius);
+        var arc = d3.svg.arc().innerRadius(progress.pie.vars.innerRadius).outerRadius(progress.pie.vars.outerRadius);
            
            var i = d3.interpolate((this._current || progress.pie.vars.startValue),  b);
            this._current = i(0);
@@ -191,17 +192,19 @@ progress = function() {
 
         progress.pie.vars.paths.on('mouseover', function(d, i) {
 
+            var data;
+
             // change the inner html depending on the data
             if(progress.pie.vars.status === 'marks')
             { 
-              tooltip.innerHTML = 'Overall Mark: ' + d.value + '%';
+              data = 'Overall Mark: ' + d.value + '%';
             }
             else
             {
-              tooltip.innerHTML = 'Module weight: ' + d.value + '%';
+              data = 'Module weight: ' + d.value + '%';
             }
             
-            showTooltip(d, this);
+            showTooltip(data);
 
           });
 
@@ -363,13 +366,6 @@ progress = function() {
         // draw the axis and data on to the svg
         progress.scatter.createScatterGraph();
 
-        // create the tooltip, hide it and append it to the dom
-        progress.scatter.vars.tooltip = document.createElement('div');
-        progress.scatter.vars.tooltip.setAttribute('id', 'scatterTooltip');
-        progress.scatter.vars.tooltip.classList.add('tooltip');
-        progress.scatter.vars.tooltip.style.display = 'none';
-        document.body.appendChild( progress.scatter.vars.tooltip );
-
         // append all elements to the scatter element before appending to page
         self.vars.scatterEl.appendChild( self.vars.scatterListEl );
         self.vars.scatterEl.appendChild( self.vars.scatterCurrentPercentEl );
@@ -392,7 +388,6 @@ progress = function() {
           {
             progress.scatter.update(progress.scatter.vars.data.overall);
             // work out the overall based on some normalization method
-            console.log(progress.scatter.vars.data.overall);
           }
           else
           {
@@ -416,11 +411,11 @@ progress = function() {
 
         // listen for hovers
         progress.scatter.vars.circles.on('mouseover', function (d) {
-          progress.scatter.showTooltip(d);
+          showTooltip(d.mark);
         });
 
         progress.scatter.vars.circles.on('mouseout', function (d) {
-          progress.scatter.removeTooltip();
+          removeTooltip();
         });
 
 
@@ -429,8 +424,7 @@ progress = function() {
       update: function(d) {
 
         // remove the scatter line
-        d3.select('.scatterLine')
-          .remove();
+        d3.select('.scatterLine').remove();
 
         // update x axis domain
         progress.scatter.vars.xScale
@@ -491,14 +485,13 @@ progress = function() {
         
         // listen for hovers
         progress.scatter.vars.svg.selectAll("circle").on('mouseover', function (d) {
-          progress.scatter.showTooltip(d);
+          showTooltip(d.mark);
         });
 
        progress.scatter.vars.svg.selectAll("circle").on('mouseout', function (d) {
-          progress.scatter.removeTooltip();
+          removeTooltip();
         });
 
-           
       },
 
       createScatterGraph: function() {
@@ -658,40 +651,7 @@ progress = function() {
         return Math.floor(Math.random() * progress.scatter.vars.height);
       },
 
-      showTooltip: function(data) {
-
-        var coords = d3.mouse(document.body);
-
-        // add initial inline styles
-        progress.scatter.vars.tooltip.style.position = 'absolute';
-        progress.scatter.vars.tooltip.style.left = (coords[0] - 50 )+ 'px';
-        progress.scatter.vars.tooltip.style.top = (coords[1] + 15) + 'px';
-
-        // set the inner html to the module name
-        progress.scatter.vars.tooltip.innerHTML = data.mark + '%';
-
-        // show the tooltip on the page
-        progress.scatter.vars.tooltip.style.display = 'inline';
-
-      },
-
-      removeTooltip: function() {
-
-        // hide the tooltip from the page
-        progress.scatter.vars.tooltip.style.display = 'none';
-
-        // reset the tooltip coords
-        progress.scatter.vars.tooltip.style.left = 0;
-        progress.scatter.vars.tooltip.style.top = 0;
-
-        // reset d3.event so we can register other events
-        d3.event = '';
-
-      },
-
       updateCurrentPercent: function(current) {
-
-        console.log(current);
 
         progress.scatter.vars.scatterCurrentPercentEl.innerHTML = '<h2>Current Percentage</h2>';
 
@@ -727,13 +687,6 @@ progress = function() {
 
         var color = d3.scale.category20();
 
-        // create the tooltip, hide it and append it to the dom
-        progress.force.vars.tooltip = document.createElement('div');
-        progress.force.vars.tooltip.setAttribute('id', 'forceTooltip');
-        progress.force.vars.tooltip.classList.add('tooltip');
-        progress.force.vars.tooltip.style.display = 'none';
-        document.body.appendChild( progress.force.vars.tooltip );
-
         // store d3 force layout in a force variables for reuse
         progress.force.vars.force = d3.layout.force()
           .charge(progress.force.vars.charge)
@@ -768,10 +721,11 @@ progress = function() {
           .style('fill', function(d) { return color(d.group); })
           .call(progress.force.vars.force.drag)
           .on('mouseover', function(d) {
-            progress.force.showTooltip(d);
+            console.log(d);
+            showTooltip(d.name);
           })
           .on('mouseout', function(d) {
-            progress.force.removeTooltip();
+            removeTooltip();
           });
 
         // try reduce the inital bounce
@@ -834,41 +788,7 @@ progress = function() {
 
           return tmpObj;
 
-      }, 
-
-      showTooltip: function(data) {
-
-        var coords = d3.mouse(document.body);
-
-        // add initial inline styles
-        progress.force.vars.tooltip.style.position = 'absolute';
-        progress.force.vars.tooltip.style.left = (coords[0] - 50 )+ 'px';
-        progress.force.vars.tooltip.style.top = (coords[1] + 15) + 'px';
-
-        // show the tooltip on the page
-        progress.force.vars.tooltip.style.display = 'inline';
-
-        // set the inner html to the module name
-        progress.force.vars.tooltip.innerHTML = data.name;
-
-        // show the tooltip on the page
-        progress.force.vars.tooltip.style.display = 'inline';
-
-      },
-
-      removeTooltip: function() {
-
-        // hide the tooltip from the page
-        progress.force.vars.tooltip.style.display = 'none';
-
-        // reset the tooltip coords
-        progress.force.vars.tooltip.style.left = 0;
-        progress.force.vars.tooltip.style.top = 0;
-
-        // reset d3.event so we can register other events
-        d3.event = '';
-
-      },
+      }
 
     }
 
@@ -990,7 +910,7 @@ progress = function() {
 
     }
 
-    function showTooltip() {
+    function showTooltip(data) {
 
       var coords = d3.mouse(document.body);
 
@@ -998,6 +918,9 @@ progress = function() {
       tooltip.style.position = 'absolute';
       tooltip.style.left = (coords[0] - 50 )+ 'px';
       tooltip.style.top = (coords[1] + 15) + 'px';
+
+      // set the tooltip's html
+      tooltip.innerHTML = data;
 
       // show the tooltip on the page
       tooltip.style.display = 'inline';
