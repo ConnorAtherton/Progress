@@ -10,15 +10,15 @@ Link progress.js file into your project
 <script src="progress.js"></script>
 ```
 
-Create container for progress to load graphs into
+Create container for progress to load graphs into.
 
-**IMPORTANT** The container needs to have an ID so progress can find it. It also needs to have a data-user-id attribute which is the users unique identifier to retrieve data from RESTful API
+**IMPORTANT** The container needs to have an ```id``` so progress can find it. It also needs to have a ```data-user-id``` attribute which is the users unique identifier to retrieve data from RESTful API
 
 ```HTML
 <section id="data" data-user-id="connor"></section>
 ```
 
-Initalise progress by calling `progress.init()` passing in the container ID as the first argument and link to the API as the second argument
+Initalise progress by calling `progress.init()` passing in the container ```id``` as the first argument and link to the API where the student data is served as the second argument
 
 ```JavaScript
 progress.init("data", "path/to/RESTful/API")
@@ -35,7 +35,7 @@ Install node modules
   
 	npm install
 
-Install bower dependancies
+Install bower dependencies
   
     bower install
 
@@ -43,7 +43,7 @@ Run the server
   
     grunt server
 
-Demo should automatically open in the browser - hack away and contribute!
+The demo should automatically open in your browser - now just hack away and contribute!
 
 ## Contributing
 
