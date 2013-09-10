@@ -1,0 +1,7 @@
+demo/node_modules
+demo/.tmp
+demo/.sass-cache
+demo/app/bower_components
+
+.DS_STORE
+*/.DS_STORE
