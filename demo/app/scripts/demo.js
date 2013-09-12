@@ -33,10 +33,10 @@ $(document).ready(function() {
 	// load the tabular data
 	function loadTable() {
 
-		if (progress.data && typeof progress.data != 'undefined') {
+		if (Progress.data && typeof Progress.data != 'undefined') {
 			// data is ready and willing to be modified
 			console.log('data is ready and willing to be modified');
-			loadOldWay(progress.data);
+			loadOldWay(Progress.data);
 			clearInterval();
 		}
 		else
@@ -170,7 +170,6 @@ $(document).ready(function() {
 
 		$('#oldway').append(table);
 
-		console.log(table);
 	}
 
 });

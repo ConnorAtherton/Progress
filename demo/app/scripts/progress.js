@@ -1,18 +1,21 @@
-progress = function() {
+Progress = function() {
     'use strict';
 
+    // this is the object returned
     var progress = {
-      version: '0.0.1',
-      data: 'Haven\'t received any data yet'
+      version: '0.0.3',
+      data: null
     };
 
+    // Global private variables 
     var globalElement,
-        tooltip = document.createElement('div');
+        tooltip = document.createElement('div'),
+        color = d3.scale.category20();
 
     /**
     *
     * Progress constructor, takes an element you pass it and stores it as a global plugin
-    * variable used as a container for all the visualisations. Doesn\'t actually displays the data
+    * variable used as a container for all the visualisations. Doesn\'t actually display the data
     * but calls getData() which does that.
     *
     **/
@@ -20,9 +23,11 @@ progress = function() {
     progress.init = function(element, url) {
 
       // error checking
-      if( arguments.length === 0 ) throw new TypeError('Function expects two parameters, none given.');
+      if( arguments.length === 0 ) throw new Error('Progress expects two parameters, none given.');
       // error check for arguments of length 1
+      if( arguments.length === 1 ) throw new Error('Progress expects two parameters, none given.'); ; 
 
+      // check to see if the element passed was a node or a string
       typeof element === 'string' ? globalElement = document.getElementById( element ) : globalElement = element;
       
       /**
@@ -32,13 +37,11 @@ progress = function() {
       
       **/
       
-      // store it, maybe use it for later 
+      // store the id, use it for later 
       var id = globalElement.getAttribute('data-user-id');
       if ( id.trim() === 'undefined' || id.trim() === '' ) throw new Error('A user id cannot be undefined or empty');
 
-      globalElement.setAttribute('id', 'progress');
-
-      // get data from url 
+      // get data from url and within async callback show the graphs
       getData( url, id );
 
       // create a tooltip to use later in the graphs
@@ -86,10 +89,18 @@ progress = function() {
           **/
           
           progress.pie.vars.clickTarget = document.createElement('div');
-          progress.pie.vars.clickTarget.classList.add('btn');
-          progress.pie.vars.clickTarget.setAttribute('data-update', 'weights');
+          progress.pie.vars.clickTarget.setAttribute('id', 'progressPieClickTarget');
           progress.pie.vars.clickTarget.innerHTML = 'Show Weights';
           progress.pie.vars.pieEl.appendChild( progress.pie.vars.clickTarget );
+
+          // Append created DOM element to the element used for the plugin.
+          progress.pie.vars.pieEl.setAttribute('id', 'progressPie');
+          progress.pie.vars.pieEl.classList.add('progressPieMarks');
+          globalElement.appendChild( progress.pie.vars.pieEl );
+
+          // Show the initial state of the pie charts and add the module names.
+          progress.pie.showOverallMarks();
+          progress.pie.showModuleNames();
 
           /**
           *
@@ -102,15 +113,6 @@ progress = function() {
           d3.select(progress.pie.vars.clickTarget).on('click', function() {
             progress.pie.vars.status === 'marks' ? progress.pie.updateWeights(this) : progress.pie.updateMarks(this);
           });
-
-          // Append created DOM element to the element used for the plugin.
-          progress.pie.vars.pieEl.setAttribute('id', 'progressPie');
-          progress.pie.vars.pieEl.classList.add('progressPieMarks');
-          globalElement.appendChild( progress.pie.vars.pieEl );
-
-          // Show the initial state of the pie charts and add the module names.
-          progress.pie.showOverallMarks();
-          progress.pie.showModuleNames();
 
           // add an event listener to each path
           d3.selectAll('path').on('mouseover', function(d, i) {
@@ -136,22 +138,24 @@ progress = function() {
               removeTooltip();
           });
 
+          // change the pie charts state so they won't be redrawn
           progress.pie.vars.drawn = true;
 
       },
 
-      hide: function() {
-        console.log('hide the pie charts');
-      },
-
       tweenPie: function(b) {
-        var arc = d3.svg.arc().innerRadius(progress.pie.vars.innerRadius).outerRadius(progress.pie.vars.outerRadius);
+        var arc = d3.svg.arc()
+                    .innerRadius(progress.pie.vars.innerRadius)
+                    .outerRadius(progress.pie.vars.outerRadius);
            
-           var i = d3.interpolate((this._current || progress.pie.vars.startValue),  b);
-           this._current = i(0);
-           return function(t) {
+        var i   = d3.interpolate((this._current || progress.pie.vars.startValue),  b);
+
+        this._current = i(0);
+
+        return function(t) {
              return arc(i(t));
         };
+
       },
 
       /**
@@ -242,7 +246,9 @@ progress = function() {
 
         // handle exit and enter selections
         progress.pie.vars.paths.exit().remove();
-        progress.pie.vars.paths.enter().append('path');
+        progress.pie.vars.paths.enter().append('path')
+            .attr('transform', 'translate(' + (progress.pie.vars.pieWidth / 2) + ', ' + (progress.pie.vars.pieHeight / 2) + ')');
+;
 
         progress.pie.vars.paths.transition()
             .ease('sin')
@@ -324,6 +330,7 @@ progress = function() {
 
     progress.scatter = {
 
+
       vars: {
         data: {},
         svg: null,
@@ -339,37 +346,35 @@ progress = function() {
         yScale: null,
         xAxis: null,
         yAxis: null,
-        line: null,
-        tooltip: null
+        line: null
       },
 
       show: function() {
 
-        var self = progress.scatter;
 
         // build scatter data
-        self.formatData();
+        this.formatData();
 
         // build scatter list of modules
-        self.populateModules();
+        this.populateModules();
 
         // create all elements
-        self.vars.scatterCurrentPercentEl.innerHTML = '<h2>Current Percentage</h2>';
-        self.vars.scatterForecastPercentEl.innerHTML = '<h2>Forecasted Percentage</h2>';
+        this.vars.scatterCurrentPercentEl.innerHTML = '<h2>Current Percentage</h2>';
+        this.vars.scatterForecastPercentEl.innerHTML = '<h2>Forecasted Percentage</h2>';
 
-        self.addIDToDisplayElements();
+        this.addIDToDisplayElements();
 
         // append all elements to the scatter element before appending to page
-        self.vars.scatterEl.appendChild( self.vars.scatterCurrentPercentEl );
-        self.vars.scatterEl.appendChild( self.vars.scatterForecastPercentEl );
+        this.vars.scatterEl.appendChild( this.vars.scatterCurrentPercentEl );
+        this.vars.scatterEl.appendChild( this.vars.scatterForecastPercentEl );
 
         // draw the axis and data on to the svg
         progress.scatter.createScatterGraph();
 
         // append all elements to the scatter element before appending to page
-        self.vars.scatterEl.appendChild( self.vars.scatterListEl );
-        self.vars.scatterEl.appendChild( self.vars.scatterCurrentPercentEl );
-        self.vars.scatterEl.appendChild( self.vars.scatterForecastPercentEl );
+        this.vars.scatterEl.appendChild( this.vars.scatterListEl );
+        this.vars.scatterEl.appendChild( this.vars.scatterCurrentPercentEl );
+        this.vars.scatterEl.appendChild( this.vars.scatterForecastPercentEl );
 
         // finally install the parent element to the page
         globalElement.appendChild( this.vars.scatterEl );
@@ -548,10 +553,6 @@ progress = function() {
 
       },
 
-      hide: function() {
-
-      },
-
       addIDToDisplayElements: function() {
 
         progress.scatter.vars.scatterForecastPercentEl.setAttribute('id', 'scatterForecastElement')
@@ -671,7 +672,6 @@ progress = function() {
       vars: {
         data: {},
         svg: null,
-        tooltip: null,
         width: 900,
         height: 550,
         forceEl: document.createElement('div'),
@@ -684,8 +684,6 @@ progress = function() {
 
         // format the data
         progress.force.vars.data = progress.force.formatData(progress.data);
-
-        var color = d3.scale.category20();
 
         // store d3 force layout in a force variables for reuse
         progress.force.vars.force = d3.layout.force()
@@ -728,8 +726,12 @@ progress = function() {
             removeTooltip();
           });
 
+        // onMouseEvents(progress.force, '.node', function() {
+        //   return d.name;
+        // });
+
         // try reduce the inital bounce
-        forwardAlpha(progress.force.vars.force, 0.2);
+        forwardAlpha(progress.force.vars.force, 0.02);
 
         progress.force.vars.force.on('tick', function() {
           link.attr('x1', function(d) { return d.source.x; })
@@ -741,10 +743,6 @@ progress = function() {
               .attr('cy', function(d) { return d.y; });
     });
 
-
-      },
-
-      hide: function() {
 
       },
 
@@ -822,6 +820,20 @@ progress = function() {
         // save the data into a module var to be used elsewhere
         progress.data = arrayify(json);
 
+        showGraphs();
+
+      });
+
+    }
+
+    function showGraphs() {
+
+      if (!progress.data || typeof progress.data === 'null') {
+        
+        return false;
+
+      } else {
+        
         // show pie charts on the page
         progress.pie.show();
 
@@ -830,20 +842,26 @@ progress = function() {
 
         // show scatter diagram on page
         progress.scatter.show();
+        
+        return true;
 
-      });
+      }
 
     }
 
     /**
     *
-    * Functiomn to reduce the initial 'bouncing' of the force layout
+    * Function to reduce the initial 'bouncing' of the force layout
     *
     **/
     function forwardAlpha(layout, alpha, max) {
+
+      // provide sensible defaults in case
+      // only one arg was passed
       alpha = alpha || 0;
       max = max || 1000;
-      var i = 0;
+      var i = 0
+
       while(layout.alpha() > alpha && i++ < max) layout.tick();
     }
 

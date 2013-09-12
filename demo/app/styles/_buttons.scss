@@ -1,4 +1,4 @@
-.btn
+.btn, #progressPieClickTarget
 {	
 	height: 60px;
 	line-height: 60px;
@@ -17,7 +17,7 @@
 	@include border-radius(3px);
 }
 
-.btn:hover, a:hover
+.btn:hover, a:hover, #progressPieClickTarget:hover
 {
 	top: 2px;
 	box-shadow: 0 3px #ab3c3c;
