@@ -78,6 +78,27 @@
 	fill: #aec7e8;
 }
 
+/**
+*
+* Styles for text elements inside of pie charts
+*
+**/
+
+#progressPie svg > text
+{
+	text-anchor: middle;
+	alignment-baseline: middle;
+
+}
+
+.pieMarkPercentage:after
+{
+	content: '%';
+	display: block;
+}
+
+
+
 
 
 

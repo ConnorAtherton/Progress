@@ -31,24 +31,24 @@ $(document).ready(function() {
 	$container.fadeIn(550);
 
 	// load the tabular data
-	function loadTable() {
+	// function loadTable() {
 
-		if (Progress.data && typeof Progress.data != 'undefined') {
-			// data is ready and willing to be modified
-			console.log('data is ready and willing to be modified');
-			loadOldWay(Progress.data);
-			clearInterval();
-		}
-		else
-		{
-			// no data yet sir
-			console.log('no data yet sir');
-			setInterval(loadTable(), 300);
-		}
+	// 	if (Progress.data && typeof Progress.data != 'undefined') {
+	// 		// data is ready and willing to be modified
+	// 		console.log('data is ready and willing to be modified');
+	// 		loadOldWay(Progress.data);
+	// 		clearInterval();
+	// 	}
+	// 	else
+	// 	{
+	// 		// no data yet sir
+	// 		console.log('no data yet sir');
+	// 		setInterval(loadTable(), 300);
+	// 	}
 
-	}
+	// }
 
-	loadTable();
+	// loadTable();
 
 	// capture the click event on the links and navigate to correct slide
 	$next.children('a').on('click', function(e) {

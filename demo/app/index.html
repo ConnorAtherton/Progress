@@ -81,7 +81,12 @@
         <script src="scripts/d3.local.js"></script>
         <script src="scripts/progress.js"></script>
         <script>
-            Progress.init('data', 'data/jordan.json');
+
+            var progress = new Progress({
+                'element': 'data',
+                'url': 'data/jordan.json'
+            });
+
         </script>
         <!-- endbuild -->
 
