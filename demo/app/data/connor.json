@@ -10,7 +10,7 @@
 			"weight" : 30
 		},
 		"Exam" : {
-			"mark" : 40,
+			"mark" : null,
 			"weight" : 40
 		}
 	},
@@ -37,11 +37,11 @@
 			"weight" : 30
 		},
 		"CW2 Assignment" : {
-			"mark" : 45,
+			"mark" : null,
 			"weight" : 30
 		},
 		"CW3 Assignment" : {
-			"mark" : 86,
+			"mark" : null,
 			"weight" : 60
 		}
 	},
@@ -160,19 +160,19 @@
 			"weight" : 10
 		},
 		"Group CW" : {
-			"mark" : 80,
+			"mark" : null,
 			"weight" : 10
 		},
 		"Air hockey" : {
-			"mark" : 40,
+			"mark" : null,
 			"weight" : 10
 		},
 		"team display" : {
-			"mark" : 55,
+			"mark" : null,
 			"weight" : 10
 		},
 		"Courework 3" : {
-			"mark" : 40,
+			"mark" : null,
 			"weight" : 10
 		}
 	},

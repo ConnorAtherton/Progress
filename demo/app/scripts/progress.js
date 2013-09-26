@@ -672,7 +672,8 @@ Progress = (function(opts) {
       .enter().append('circle')
         .attr('class', 'node')
         .attr('r', 4)
-        .style('fill', function(d) { return _color(d.group); })
+        .style('fill', function(d) { return force.fillColor(d) })
+        .style('stroke', function(d) { return force.strokeColor(d) })
         .call(force.vars.force.drag)
         .on('mouseover', function(d) {
           showTooltip(d.name);
@@ -709,33 +710,61 @@ Progress = (function(opts) {
 
     tmpObj['nodes'].push({'name': 'you', 'group': 1});
 
-    for (var module in data) {
+    data.forEach( function(module, index, array) {
 
       // actual module node that module work has to link too
       var currentParentNode = arrayPos;
 
         // add module name to nodes and link back to root node
-        tmpObj['nodes'].push({'name': data[module].name, 'group': i });
+        tmpObj['nodes'].push({'name': module.name, 'group': i, 'mark': module.overallMark});
         tmpObj['links'].push({'source': arrayPos, 'target': 0});
 
         // pushed another so update array position
         arrayPos++;
 
-        // loop through assesment names and link them to their parent module
-        data[module].work.names.forEach( function(workName) {
+        var length = module.work.names.length,
+            j = 0;
 
-          tmpObj['nodes'].push({'name': workName, 'group': i});
+        // loop through assesment names and link them to their parent module
+        for( j; j < length; j++) {
+
+          tmpObj['nodes'].push({'name': module.work.names[j], 'group': i, 'mark': module.work.marks[j]});
           tmpObj['links'].push({'source': arrayPos, 'target': currentParentNode});
+
           arrayPos++;
 
-        });
+        }
 
-      // increment the counters
+      // increment the group counter
       i++;
 
-    }
+    })
 
       return tmpObj;
+  }
+
+  force.fillColor = function(module) {
+    var color;
+
+    if(!module.mark && module.mark !== 0) {
+      color = 'ffffff';
+    } else {
+      color = _color(module.group);
+    }
+
+    return color;
+  }
+
+  force.strokeColor = function(module) {
+    var color;
+
+    if(!module.mark && module.mark !== 0) {
+      color = _color(module.group);
+    } else {
+      color = 'e3e3e3';
+    }
+
+    return color;
   }
 
   /**
