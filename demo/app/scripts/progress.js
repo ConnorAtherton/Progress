@@ -55,7 +55,7 @@ Progress = (function(opts) {
         pieWidth: 180,
         pieHeight : 180,
         outerRadius : 75,
-        innerRadius: 70,
+        innerRadius: 68,
         pieEl: document.createElement('div'),
         paths: null,
         svg: null,
@@ -673,7 +673,7 @@ Progress = (function(opts) {
         .attr('class', 'node')
         .attr('r', 4)
         .style('fill', function(d) { return force.fillColor(d) })
-        .style('stroke', function(d) { return force.strokeColor(d) })
+        .style('stroke', function(d) { return _color(d.group); })
         .call(force.vars.force.drag)
         .on('mouseover', function(d) {
           showTooltip(d.name);
@@ -707,16 +707,20 @@ Progress = (function(opts) {
     var i = 2;
     // holds ths current position of the array node
     var arrayPos = 1;
+    // holds the current modules position and name
+    var currentParentPos, currentParentName, currentParentObj;
 
     tmpObj['nodes'].push({'name': 'you', 'group': 1});
 
     data.forEach( function(module, index, array) {
 
       // actual module node that module work has to link too
-      var currentParentNode = arrayPos;
+      currentParentPos = arrayPos,
+      currentParentName = module.name;
+      currentParentObj = {'name': module.name, 'group': i, 'completed': force.isComplete(module.overallMark)};
 
         // add module name to nodes and link back to root node
-        tmpObj['nodes'].push({'name': module.name, 'group': i, 'mark': module.overallMark});
+        tmpObj['nodes'].push(currentParentObj);
         tmpObj['links'].push({'source': arrayPos, 'target': 0});
 
         // pushed another so update array position
@@ -728,8 +732,14 @@ Progress = (function(opts) {
         // loop through assesment names and link them to their parent module
         for( j; j < length; j++) {
 
-          tmpObj['nodes'].push({'name': module.work.names[j], 'group': i, 'mark': module.work.marks[j]});
-          tmpObj['links'].push({'source': arrayPos, 'target': currentParentNode});
+          // if just one piece of work is incomplete then 
+          // the whole module is also
+          if(module.work.marks[j] === (undefined || null)) {
+            currentParentObj.completed = false;
+          }
+
+          tmpObj['nodes'].push({'name': module.work.names[j], 'group': i, 'completed': force.isComplete(module.work.marks[j])});
+          tmpObj['links'].push({'source': arrayPos, 'target': currentParentPos});
 
           arrayPos++;
 
@@ -746,26 +756,19 @@ Progress = (function(opts) {
   force.fillColor = function(module) {
     var color;
 
-    if(!module.mark && module.mark !== 0) {
+    if(module.completed) {
       color = 'ffffff';
     } else {
       color = _color(module.group);
     }
 
-    return color;
+    return !module.completed ? 'ffffff' : _color(module.group);
   }
 
-  force.strokeColor = function(module) {
-    var color;
-
-    if(!module.mark && module.mark !== 0) {
-      color = _color(module.group);
-    } else {
-      color = 'e3e3e3';
-    }
-
-    return color;
+  force.isComplete = function(mark) {
+    return mark === (undefined || null) ? false : true;
   }
+
 
   /**
   *
