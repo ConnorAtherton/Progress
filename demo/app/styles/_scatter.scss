@@ -93,10 +93,20 @@
 	font-size: 12px;
 }
 
-.scatterData
+.scatterComplete
 {
 	fill: #f7505a;
 	z-index: 99;
+	shape-rendering: geometricPrecision;
+}
+
+.scatterIncomplete
+{
+	fill: none;
+	stroke: #f7505a;
+	stroke-width: 2px;
+	z-index: 99;
+	shape-rendering: geometricPrecision;
 }
 
 .scatterline

@@ -6,7 +6,8 @@ Progress = (function(opts) {
   // Global private variables 
   var _globalElement,
       _tooltip,
-      _data;
+      _data,
+      _converter = opts.converter || converter;
 
   // d3 global variables
   var _color = d3.scale.category20(),
@@ -296,6 +297,7 @@ Progress = (function(opts) {
 
   scatter.vars =  {
     data: {},
+    drawn: false,
     svg: null,
     circles: null,
     width: 650,
@@ -305,11 +307,14 @@ Progress = (function(opts) {
     scatterCurrentPercentEl: document.createElement('div'),
     scatterForecastPercentEl: document.createElement('div'),
     scatterListEl: document.createElement('div'),
+    currentPercentEl: document.createElement('div'),
+    forecastPercentEl: document.createElement('div'),
     xScale: null,
     yScale: null,
     xAxis: null,
     yAxis: null,
-    line: null
+    line: null,
+    lineData: null,
   }
 
   scatter.show = function() {
@@ -323,6 +328,12 @@ Progress = (function(opts) {
     // create all elements
     scatter.vars.scatterCurrentPercentEl.innerHTML = '<h2>Current Percentage</h2>';
     scatter.vars.scatterForecastPercentEl.innerHTML = '<h2>Forecasted Percentage</h2>';
+
+    scatter.vars.currentPercentEl.setAttribute('id', 'currentPercentEl');
+    scatter.vars.forecastPercentEl.setAttribute('id', 'forecastPercentEl');
+
+    scatter.vars.scatterCurrentPercentEl.appendChild(scatter.vars.currentPercentEl);
+    scatter.vars.scatterForecastPercentEl.appendChild(scatter.vars.forecastPercentEl);
 
     scatter.addIDToDisplayElements();
 
@@ -354,6 +365,7 @@ Progress = (function(opts) {
       if( this.innerHTML == 'Overall Modules')
       {
         scatter.update(scatter.vars.data.overall);
+        scatter.updateCurrentPercent(scatter.vars.data.overall.overall);
         // work out the overall based on some normalization method
       }
       else
@@ -370,7 +382,9 @@ Progress = (function(opts) {
 
         }
 
-        if(typeof mark !== undefined) scatter.updateCurrentPercent(mark);
+        if(mark !== (undefined || null)) {
+          scatter.updateCurrentPercent(mark);
+        } 
 
       }
 
@@ -385,6 +399,8 @@ Progress = (function(opts) {
       removeTooltip();
     });
 
+    scatter.vars.drawn = true;
+
 
   },
 
@@ -397,7 +413,9 @@ Progress = (function(opts) {
     scatter.vars.xScale
       .domain( d.map( function(d) { return d.name }))
 
-    scatter.createLine(d);
+    // pass the array by value so the node information is not 
+    // modified
+    scatter.createLine(d.slice());
 
     // Update x-axis values
     scatter.vars.svg.select(".x.axis")
@@ -415,6 +433,9 @@ Progress = (function(opts) {
        })
        .attr('cy', function(d) {
          return scatter.vars.yScale(d.mark);
+       })
+       .attr('class', function(d) {
+         return scatter.checkForIncompleted(d)
        });
 
     // enter selection
@@ -439,7 +460,9 @@ Progress = (function(opts) {
         return scatter.vars.yScale(d.mark);
       })
       .attr('r', 4)
-      .attr('class', 'scatterData');
+      .attr('class', function(d) {
+        return scatter.checkForIncompleted(d);
+      });
 
     // handle exit selections
     scatter.vars.circles = scatter.vars.svg.selectAll("circle")
@@ -496,7 +519,8 @@ Progress = (function(opts) {
       .call( scatter.vars.yAxis );
 
     // add the line going through the data points
-    scatter.createLine(scatter.vars.data.overall);
+    scatter.vars.lineData = scatter.vars.data.overall;
+    scatter.createLine(scatter.vars.lineData);
 
     // actually add the data here
     scatter.vars.circles = scatter.vars.svg.selectAll('circle')
@@ -510,7 +534,10 @@ Progress = (function(opts) {
         return scatter.vars.yScale(d.mark);
       })
       .attr('r', 4)
-      .attr('class', 'scatterData');
+      .attr('class', 'scatterData')
+      .attr('class', function(d) {
+        return scatter.checkForIncompleted(d)
+      });
 
 
   }
@@ -521,10 +548,32 @@ Progress = (function(opts) {
     scatter.vars.scatterCurrentPercentEl.setAttribute('id', 'scatterCurrentElement')
     scatter.vars.scatterListEl.setAttribute('id', 'scatterListElement');
     scatter.vars.scatterEl.setAttribute('id', 'progressScatter');
+    scatter.vars.currentPercentEl.setAttribute('id', 'currentPercentEl');
+    scatter.vars.forecastPercentEl.setAttribute('id', 'forecastPercentEl');
+
+  }
+
+  scatter.checkForIncompleted = function(data) {
+
+    // if the data is incomplete..
+    if(data.mark === null || data.mark === undefined) {
+      // then return the incomplete class
+      return 'scatterIncomplete';
+    }
+
+    // otherwise return that it is complete
+    return 'scatterComplete';
 
   }
 
   scatter.createLine = function(data) {
+
+    // copy the data into a temp array to be used in this
+    // function so the original data isn't modified. We don't want 
+    // to remove the node from the graph, just from the line
+    var lineData = data;
+
+    lineData = scatter.removeIncompleted(lineData);
 
     scatter.vars.line = d3.svg.line()
       .x( function(d) { 
@@ -547,8 +596,34 @@ Progress = (function(opts) {
       .attr("stroke-width", function(d) { return "1.5px"; }) 
       .attr("stroke", function(d) { return "#666"; })
       .attr("z-index", function() { return -100 })
-      .attr('d', scatter.vars.line(data))
+      .attr('d', scatter.vars.line(lineData))
       .attr('class', 'scatterLine');
+
+      return data;
+
+  }
+
+  scatter.removeIncompleted = function(data) {
+    // tmp array to hold indexes of the value we want to splice
+    var removeIndex = [];
+
+    // loop through original array finding indexes of work that is incomplete
+    data.forEach(function(value, index){
+      if(!value.completed) {
+        removeIndex.push(index);
+      }
+    })
+
+    // reverse sort to make sure higher indexes are spliced first
+    removeIndex.sort(function(a, b) { return a - b })
+
+    // splice the array...
+    for(var i = removeIndex.length - 1; i >= 0; i--) {
+      data.splice(removeIndex[i], 1);
+    }
+
+    // return the new array with modules removed
+    return data;
 
   }
 
@@ -584,7 +659,8 @@ Progress = (function(opts) {
       var overall = value.overallMark;
 
       // add the module name and overall mark to date in the overall array
-      var tmpObj = {'name': value.name, 'mark': value.overallMark}
+      // assert that the module is completed to start with
+      var tmpObj = {'name': value.name, 'mark': value.overallMark, 'completed': true}
       scatter.vars.data.overall.push(tmpObj);
 
       // create a new array in data object for this module
@@ -602,7 +678,12 @@ Progress = (function(opts) {
       });
 
       for (var i = 0; i < tmpMarks.length; i++) {
-        var tmpObj = {'name': tmpNames[i], 'mark': tmpMarks[i]}
+
+        if( tmpMarks[i] === (undefined || null) ) {
+          tmpObj.completed = false;
+        }
+
+        var tmpObj = {'name': tmpNames[i], 'mark': tmpMarks[i], 'completed': isComplete(tmpMarks[i])}
         scatter.vars.data[value.name].push(tmpObj);
       };
 
@@ -616,15 +697,23 @@ Progress = (function(opts) {
 
   scatter.updateCurrentPercent = function(current) {
 
-    scatter.vars.scatterCurrentPercentEl.innerHTML = '<h2>Current Percentage</h2>';
+    if( current === undefined ) {
+      current = '-';
+    } else {
+      // convert the number to correct mark form
+      current = _converter(current);
+    }
 
-    // create a div element containing current mark
-    var curEl = document.createElement('div');
-    curEl.setAttribute('id', 'currentMark');
-    curEl.innerHTML = current + '<span class="percent">%</span>';
+    // update the current percent element div
+    scatter.vars.currentPercentEl.innerHTML = current;
+  }
 
-    scatter.vars.scatterCurrentPercentEl.appendChild(curEl);
+  scatter.updateForecastPercent = function(forecast) {
+    // convert the number to correct mark form
+    forecast = _converter(forecast);
 
+    // update the current percent element div
+    scatter.vars.forecastPercentEl.innerHTML = forecast;
   }
 
   force.vars = {
@@ -635,7 +724,8 @@ Progress = (function(opts) {
     forceEl: document.createElement('div'),
     charge: -120,
     friction: 0.8,
-    distance: 50
+    distance: 50,
+    keyEl: document.createElement('div')
   }
 
   force.show = function() {
@@ -651,7 +741,10 @@ Progress = (function(opts) {
         .size([ force.vars.width, force.vars.height ]);
 
       // create the svg element and store
-      force.vars.forceEl.setAttribute('id', 'Force');
+      force.vars.forceEl.setAttribute('id', 'progressForce');
+      force.vars.keyEl.setAttribute('id', 'forceKey');
+      // append the key to force svg element
+      force.vars.forceEl.appendChild(force.vars.keyEl);
 
       force.vars.svg = d3.select( force.vars.forceEl ).append('svg')
         .attr('width', force.vars.width)
@@ -698,6 +791,10 @@ Progress = (function(opts) {
         _globalElement.appendChild( force.vars.forceEl );
   }
 
+  force.createKey = function() {
+
+  }
+
   force.format = function(data) {
 
     // create a temporary array to build up our data object
@@ -717,7 +814,7 @@ Progress = (function(opts) {
       // actual module node that module work has to link too
       currentParentPos = arrayPos,
       currentParentName = module.name;
-      currentParentObj = {'name': module.name, 'group': i, 'completed': force.isComplete(module.overallMark)};
+      currentParentObj = {'name': module.name, 'group': i, 'completed': isComplete(module.overallMark)};
 
         // add module name to nodes and link back to root node
         tmpObj['nodes'].push(currentParentObj);
@@ -738,7 +835,7 @@ Progress = (function(opts) {
             currentParentObj.completed = false;
           }
 
-          tmpObj['nodes'].push({'name': module.work.names[j], 'group': i, 'completed': force.isComplete(module.work.marks[j])});
+          tmpObj['nodes'].push({'name': module.work.names[j], 'group': i, 'completed': isComplete(module.work.marks[j])});
           tmpObj['links'].push({'source': arrayPos, 'target': currentParentPos});
 
           arrayPos++;
@@ -765,8 +862,8 @@ Progress = (function(opts) {
     return !module.completed ? 'ffffff' : _color(module.group);
   }
 
-  force.isComplete = function(mark) {
-    return mark === (undefined || null) ? false : true;
+  force.addKey = function() {
+
   }
 
 
@@ -901,6 +998,10 @@ Progress = (function(opts) {
 
   }
 
+  function converter(number) {
+    return number + '%';
+  }
+
   function showTooltip(data) {
 
     var coords = d3.mouse(document.body);
@@ -931,6 +1032,10 @@ Progress = (function(opts) {
     // reset d3.event so we can register other events
     d3.event = '';
 
+  }
+
+  var isComplete = function(mark) {
+    return mark === (undefined || null) ? false : true;
   }
 
   // auto init
