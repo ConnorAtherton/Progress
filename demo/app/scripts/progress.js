@@ -519,8 +519,7 @@ Progress = (function(opts) {
       .call( scatter.vars.yAxis );
 
     // add the line going through the data points
-    scatter.vars.lineData = scatter.vars.data.overall;
-    scatter.createLine(scatter.vars.lineData);
+    scatter.createLine(scatter.vars.data.overall.slice());
 
     // actually add the data here
     scatter.vars.circles = scatter.vars.svg.selectAll('circle')
@@ -566,14 +565,11 @@ Progress = (function(opts) {
 
   }
 
+  // data is passed by value rather than by reference
+  // because we don't want to modify the original data
   scatter.createLine = function(data) {
 
-    // copy the data into a temp array to be used in this
-    // function so the original data isn't modified. We don't want 
-    // to remove the node from the graph, just from the line
-    var lineData = data;
-
-    lineData = scatter.removeIncompleted(lineData);
+    data = scatter.removeIncompleted(data);
 
     scatter.vars.line = d3.svg.line()
       .x( function(d) { 
@@ -596,10 +592,8 @@ Progress = (function(opts) {
       .attr("stroke-width", function(d) { return "1.5px"; }) 
       .attr("stroke", function(d) { return "#666"; })
       .attr("z-index", function() { return -100 })
-      .attr('d', scatter.vars.line(lineData))
+      .attr('d', scatter.vars.line(data))
       .attr('class', 'scatterLine');
-
-      return data;
 
   }
 
@@ -616,6 +610,8 @@ Progress = (function(opts) {
 
     // reverse sort to make sure higher indexes are spliced first
     removeIndex.sort(function(a, b) { return a - b })
+
+    console.log(data, removeIndex)
 
     // splice the array...
     for(var i = removeIndex.length - 1; i >= 0; i--) {
@@ -651,6 +647,8 @@ Progress = (function(opts) {
 
   scatter.format = function(data) {
 
+    console.log(data);
+
     scatter.vars.data.overall = [];
 
     data.forEach( function( value ) {
@@ -683,11 +681,14 @@ Progress = (function(opts) {
           tmpObj.completed = false;
         }
 
-        var tmpObj = {'name': tmpNames[i], 'mark': tmpMarks[i], 'completed': isComplete(tmpMarks[i])}
-        scatter.vars.data[value.name].push(tmpObj);
+        console.log(tmpNames[i], tmpMarks[i], isComplete(tmpMarks[i]))
+
+        var tmpWorkObj = {'name': tmpNames[i], 'mark': tmpMarks[i], 'completed': isComplete(tmpMarks[i])}
+        scatter.vars.data[value.name].push(tmpWorkObj);
       };
 
     }, this);
+
 
   }
 
@@ -709,8 +710,13 @@ Progress = (function(opts) {
   }
 
   scatter.updateForecastPercent = function(forecast) {
-    // convert the number to correct mark form
-    forecast = _converter(forecast);
+    
+    if( current === undefined ) {
+      current = '-';
+    } else {
+      // convert the number to correct mark form
+      current = _converter(current);
+    }
 
     // update the current percent element div
     scatter.vars.forecastPercentEl.innerHTML = forecast;

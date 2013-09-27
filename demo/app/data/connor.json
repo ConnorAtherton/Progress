@@ -83,7 +83,7 @@
 			"weight" : 10
 		},
 		"Exam 1" : {
-			"mark" : 47,
+			"mark" : null,
 			"weight" : 80
 		}
 	},
@@ -130,52 +130,5 @@
 		}
 	},
 	"overallMark" : 59,
-	"weight" : 30
-},
-{
-	"name" : "GEOG210",
-	"work" : {
-		"Dissertation" : {
-			"mark" : 50,
-			"weight" : 10
-		},
-		"Group CW" : {
-			"mark" : 80,
-			"weight" : 10
-		},
-		"Individual CW" : {
-			"mark" : 40,
-			"weight" : 10
-		},
-		"Practial 1" : {
-			"mark" : 55,
-			"weight" : 10
-		},
-		"Exam" : {
-			"mark" : 40,
-			"weight" : 10
-		},
-		"Dissertation" : {
-			"mark" : 50,
-			"weight" : 10
-		},
-		"Group CW" : {
-			"mark" : null,
-			"weight" : 10
-		},
-		"Air hockey" : {
-			"mark" : null,
-			"weight" : 10
-		},
-		"team display" : {
-			"mark" : null,
-			"weight" : 10
-		},
-		"Courework 3" : {
-			"mark" : null,
-			"weight" : 10
-		}
-	},
-	"overallMark" : 34,
 	"weight" : 30
 }]
