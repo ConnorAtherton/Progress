@@ -140,6 +140,8 @@ Progress = (function(opts) {
             pieData.push(value.work.weights);
           });
 
+          console.log(pieData);
+
           // change status to overall marks
           pie.vars.status = 'weights';
 
@@ -147,7 +149,7 @@ Progress = (function(opts) {
                   .data(pieData);
 
           pie.vars.paths = pie.vars.paths
-              .data(function(d, i){ return _pie(d) });
+              .data(function(d, i){ console.log(d); return _pie(d) });
 
           pie.vars.paths.exit().remove();
           pie.vars.paths.enter().append('path')
@@ -170,7 +172,8 @@ Progress = (function(opts) {
               }
               else
               {
-                data = 'Module weight: ' + d.value + '%';
+                console.log(d);
+                data = 'Module: ' + d.name + '\n Overall Mark: ' + d.value + '%';
               }
               
               showTooltip(data);
@@ -611,8 +614,6 @@ Progress = (function(opts) {
     // reverse sort to make sure higher indexes are spliced first
     removeIndex.sort(function(a, b) { return a - b })
 
-    console.log(data, removeIndex)
-
     // splice the array...
     for(var i = removeIndex.length - 1; i >= 0; i--) {
       data.splice(removeIndex[i], 1);
@@ -647,8 +648,6 @@ Progress = (function(opts) {
 
   scatter.format = function(data) {
 
-    console.log(data);
-
     scatter.vars.data.overall = [];
 
     data.forEach( function( value ) {
@@ -681,10 +680,9 @@ Progress = (function(opts) {
           tmpObj.completed = false;
         }
 
-        console.log(tmpNames[i], tmpMarks[i], isComplete(tmpMarks[i]))
-
         var tmpWorkObj = {'name': tmpNames[i], 'mark': tmpMarks[i], 'completed': isComplete(tmpMarks[i])}
         scatter.vars.data[value.name].push(tmpWorkObj);
+
       };
 
     }, this);
@@ -795,6 +793,7 @@ Progress = (function(opts) {
         });
 
         _globalElement.appendChild( force.vars.forceEl );
+        this.addKey();
   }
 
   force.createKey = function() {
@@ -869,6 +868,28 @@ Progress = (function(opts) {
   }
 
   force.addKey = function() {
+
+    force.vars.svg = d3.select( force.vars.keyEl ).append('svg');
+
+    var filled = force.vars.svg.append('circle')
+                  .attr('class', 'keyFilledCircle')
+                  .attr('r', 4)
+                  .attr('cy', 25)
+                  .attr('cx', 25);
+
+    var radius = force.vars.svg.append('circle')
+                  .attr('class', 'keyRadiusCircle')
+                  .attr('r', 4)
+                  .attr('cy', 75)
+                  .attr('cx', 25);
+
+    force.vars.svg.append('text').text(function(d){ return ' Work Completed'})
+                  .attr('y', 30)
+                  .attr('x', 50);
+
+    force.vars.svg.append('text').text(function(d){ return ' Work Incomplete'})
+                  .attr('y', 80)
+                  .attr('x', 50);
 
   }
 

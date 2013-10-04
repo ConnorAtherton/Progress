@@ -1,6 +1,6 @@
 /**
 *
-* pie charts container styles
+* force container styles
 *
 **/
 
@@ -13,11 +13,45 @@
 }
 
 // styles for individual nodes
-.node {
+.node 
+{
   stroke-width: 1px;
 }
 
 // styles for individual links
-.link {
+.link 
+{
   stroke: #e8e8e8;
+}
+
+
+#forceKey
+{
+	display: block;
+	position: absolute;
+	bottom: 0;
+	right: 100;
+	height: 100px;
+	width: 100%;
+}
+
+#forceKey > text
+{
+	text-anchor: middle;
+	dominant-baseline: central;
+	alignment-baseline: middle;
+}
+
+#forceKey .keyFilledCircle
+{
+	fill: #f7505a;
+	display: block;
+}
+
+#forceKey .keyRadiusCircle
+{
+	fill: none;
+	stroke-width: 1px;
+	stroke: #f7505a;
+	display: block;
 }

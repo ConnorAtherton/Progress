@@ -121,11 +121,11 @@
 			"weight" : 20
 		},
 		"Practial 1" : {
-			"mark" : 23,
+			"mark" : null,
 			"weight" : 20
 		},
 		"Exam" : {
-			"mark" : 13,
+			"mark" : null,
 			"weight" : 20
 		}
 	},

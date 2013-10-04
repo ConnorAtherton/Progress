@@ -20,7 +20,8 @@ body, html
 
 .tooltip
 {
-	width: 100px;
+	min-width: 100px;
+	width: auto;
 	font-size: 12px;
 	padding: 10px;
 	background-color: rgba(0, 0, 0, 0.6);
