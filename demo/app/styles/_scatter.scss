@@ -102,11 +102,16 @@
 
 .scatterIncomplete
 {
-	fill: none;
+	fill: white;
 	stroke: #f7505a;
 	stroke-width: 2px;
 	z-index: 99;
 	shape-rendering: geometricPrecision;
+}
+
+.scatterIncomplete:hover
+{
+	cursor: pointer;
 }
 
 .scatterline
