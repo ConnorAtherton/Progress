@@ -137,28 +137,28 @@ Progress = (function(opts) {
 
           var pieData = [];
           _data.forEach( function(value, index, array) {
-            pieData.push(value.work.weights);
-          });
 
-          console.log(pieData);
+            pieData.push(value.work.weights);
+
+          });
 
           // change status to overall marks
           pie.vars.status = 'weights';
-
+          
           pie.vars.svg = pie.vars.svg
-                  .data(pieData);
+              .data(pieData);
 
           pie.vars.paths = pie.vars.paths
-              .data(function(d, i){ console.log(d); return _pie(d) });
+              .data(function(d, i){ return _pie(d) });
 
+          // handle exit and enter selections
           pie.vars.paths.exit().remove();
           pie.vars.paths.enter().append('path')
-            .attr('class', 'weights')
-            .attr('transform', 'translate(' + (pie.vars.pieWidth / 2) + ', ' + (pie.vars.pieHeight / 2) + ')');
+              .attr('transform', 'translate(' + (pie.vars.pieWidth / 2) + ', ' + (pie.vars.pieHeight / 2) + ')');
 
           pie.vars.paths.transition()
               .ease('sin')
-               .duration(250)
+               .duration(300)
                .attrTween('d', pie.tweenPie);
 
           pie.vars.paths.on('mouseover', function(d, i) {
@@ -173,7 +173,7 @@ Progress = (function(opts) {
               else
               {
                 console.log(d);
-                data = 'Module: ' + d.name + '\n Overall Mark: ' + d.value + '%';
+                data = 'Module: ' + d.name + '\n Weight: ' + d.value + '%';
               }
               
               showTooltip(data);
@@ -191,6 +191,8 @@ Progress = (function(opts) {
         },
 
         pie.updateMarks = function(that) {
+
+          _pie = d3.layout.pie().sort(null);
 
           pie.vars.clickTarget.innerHTML = 'Show Weights';
 
@@ -214,14 +216,11 @@ Progress = (function(opts) {
           pie.vars.paths.exit().remove();
           pie.vars.paths.enter().append('path')
               .attr('transform', 'translate(' + (pie.vars.pieWidth / 2) + ', ' + (pie.vars.pieHeight / 2) + ')');
-  ;
 
           pie.vars.paths.transition()
               .ease('sin')
                .duration(250)
-               .attrTween('d', pie.tweenPie);
-
-          pie.vars.paths.on('mouseover', function(d, i) { /* do nothing */ });
+               .attrTween('d', pie.tweenPie);;
 
           // clear the container's class lits then update class to represent pie state
           pie.vars.pieEl.className = '';
@@ -230,6 +229,8 @@ Progress = (function(opts) {
         },
 
         pie.showOverallMarks = function() {
+
+          _pie = d3.layout.pie().sort(null);
 
           var pieData = [];
           _data.forEach( function(value, index, array) {
@@ -249,6 +250,7 @@ Progress = (function(opts) {
             .data(function(d, i){ return _pie(d) })
             .enter().append('path')
               .attr('transform', 'translate(' + (pie.vars.pieWidth / 2) + ', ' + (pie.vars.pieHeight / 2) + ')');
+
           pie.vars.paths.transition()
               .ease('linear')
                .duration(5000)
@@ -419,8 +421,6 @@ Progress = (function(opts) {
 
   scatter.update = function(d) {
 
-    console.log(d);
-
     // remove the scatter line
     d3.select('.scatterLine').remove();
 
@@ -441,6 +441,8 @@ Progress = (function(opts) {
     // Update all circles
     scatter.vars.svg.selectAll("circle")
        .data(d)
+       .transition()
+       .duration(300)
        .attr('cx', function(d) {
          return scatter.vars.xScale(d.name);
        })
@@ -456,6 +458,9 @@ Progress = (function(opts) {
       .data(d)
       .enter()
       .append('circle')
+      .attr('fill', 'green')
+      .transition()
+      .duration(3000)
       .attr('fill', function(d) { return '#fff'})
       .attr('cx', function(d) {
         return scatter.createRandomPoint();
@@ -479,6 +484,8 @@ Progress = (function(opts) {
     scatter.vars.circles = scatter.vars.svg.selectAll("circle")
       .data(d)
       .exit() 
+      .transition()
+      .duration(100)
       .remove();
 
     var incompletes = scatter.vars.svg.selectAll('.scatterIncomplete').call(drag);
@@ -800,7 +807,7 @@ Progress = (function(opts) {
     width: 900,
     height: 550,
     forceEl: document.createElement('div'),
-    charge: -120,
+    charge: -3000,
     friction: 0.8,
     distance: 50,
     keyEl: document.createElement('div')
@@ -813,7 +820,8 @@ Progress = (function(opts) {
       // store d3 force layout in a force variables for reuse
       force.vars.force = d3.layout.force()
         .charge(force.vars.charge)
-        .linkDistance(35)
+        .linkDistance(45)
+        .gravity(1)
         .friction(force.vars.friction)
         .distance(force.vars.distance)
         .size([ force.vars.width, force.vars.height ]);
@@ -842,19 +850,21 @@ Progress = (function(opts) {
         .data(force.vars.data.nodes)
       .enter().append('circle')
         .attr('class', 'node')
-        .attr('r', 4)
+        .attr('r', function(d, i) { 
+          return force.calculateRadius(d); 
+        })
         .style('fill', function(d) { return force.fillColor(d) })
         .style('stroke', function(d) { return _color(d.group); })
         .call(force.vars.force.drag)
         .on('mouseover', function(d) {
-          showTooltip(d.name);
+          d.radius ? showTooltip(d.name + ' - ' + d.radius + '%') : showTooltip(d.name);
         })
         .on('mouseout', function(d) {
           removeTooltip();
         });
 
         // try reduce the inital bounce
-        forwardAlpha(force.vars.force, 0.02);
+        forwardAlpha(force.vars.force, 0.01);
 
         force.vars.force.on('tick', function() {
           link.attr('x1', function(d) { return d.source.x; })
@@ -870,11 +880,18 @@ Progress = (function(opts) {
         this.addKey();
   }
 
-  force.createKey = function() {
+  force.calculateRadius = function(d) {
+    var radius;
+
+    if(d.radius === undefined) return radius = 5;
+
+    return (d.radius / 4);
 
   }
 
   force.format = function(data) {
+
+    console.log(data);
 
     // create a temporary array to build up our data object
     var tmpObj = {'nodes':[], 'links':[]}
@@ -886,7 +903,7 @@ Progress = (function(opts) {
     // holds the current modules position and name
     var currentParentPos, currentParentName, currentParentObj;
 
-    tmpObj['nodes'].push({'name': 'you', 'group': 1});
+    tmpObj['nodes'].push({'name': 'You', 'group': 1});
 
     data.forEach( function(module, index, array) {
 
@@ -914,7 +931,7 @@ Progress = (function(opts) {
             currentParentObj.completed = false;
           }
 
-          tmpObj['nodes'].push({'name': module.work.names[j], 'group': i, 'completed': isComplete(module.work.marks[j])});
+          tmpObj['nodes'].push({'name': module.work.names[j], 'radius': module.work.weights[j], 'group': i, 'completed': isComplete(module.work.marks[j])});
           tmpObj['links'].push({'source': arrayPos, 'target': currentParentPos});
 
           arrayPos++;
