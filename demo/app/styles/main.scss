@@ -37,10 +37,11 @@
 
 .slide
 {
+	border-top: 5px solid #f7505a;
 	background-color: white;
 	margin: 50px auto;
 	padding: 40px;
-	min-height: 500px;
+	min-height: 600px;
 	position: relative;
 
 	@include border-radius(3px);

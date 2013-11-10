@@ -10,8 +10,13 @@ h1
   font-weight: 200;
 }
 
-h2
+h2, h3
 {
 	letter-spacing: -1px;
 	font-weight: 100;
+}
+
+h3
+{
+	color: lighten(#f7505a, 10%);
 }
