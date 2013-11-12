@@ -70,15 +70,27 @@ $(document).ready(function() {
 	    if(elapsed === 10000) $next.first().children('a').trigger('click'); // trigger the next slide
 	    if(elapsed === 11000) {
 	    	$('html, body').animate({
-	    	 	scrollTop: $('#progressScatter').offset().top
-	    	}, 30000);
+	    	 	scrollTop: $('#progressPie').offset().top - 50
+	    	}, 500);
 	    }
-	    if(elapsed === 17000) $('#progressPieClickTarget').trigger('click'); // animate the pie charts
+	    if(elapsed === 15000) $('#progressPieClickTarget').trigger('click'); // animate the pie charts
 	    if(elapsed === 19000) $('#progressPieClickTarget').trigger('click'); // .. and again
-	    if(elapsed === 41000) {
-	    	console.log('41 seconds in');
-	    	// click a module and drag some stuff to see some magic happen!!
+	    if(elapsed === 21000)  {
+	    	$('html, body').animate({
+	    	 	scrollTop: $('#progressForce').offset().top
+	    	}, 500); // take half a sec to scroll down to the force graphs
 	    }
+	    if(elapsed === 25000) $('#progressForce').children('.node:nth-child(6)').trigger('mouseover');
+	    if(elapsed === 31000)  {
+	    	$('html, body').animate({
+	    	 	scrollTop: $('#progressScatter').offset().top
+	    	}, 500); // take 2 secs to scroll down to the scatter graphs
+	    }
+	    if(elapsed === 34000) $('.GEOG204').trigger('click');
+	    if(elapsed === 36000) $('.GEOG209').trigger('click');
+	    if(elapsed === 39000) $('.scatterIncomplete:first').simulate('drag', { dy: -250, interpolation: {stepCount: 250, shaky: 1, duration: 2500}});
+	    if(elapsed === 43000) $('.scatterIncomplete:last').simulate('drag', { dy: -380, interpolation: {stepCount: 250, duration: 2000}});
+	    
 
 	    // if we are are at the end then stop animating
 	    if (elapsed === duration) {
@@ -91,6 +103,18 @@ $(document).ready(function() {
 	}
 
 	// start the presentation when the first slide is clicked on
-	// $slide.first().on('click', animate());
+	$slide.first().on('click', animate());
+
+	function findCenter(elem) {
+	    var offset,
+	        document = $(elem.ownerDocument);
+	    elem = $(elem);
+	    offset = elem.offset();
+
+	    return {
+	        x: offset.left + elem.outerWidth() / 2 - document.scrollLeft(),
+	        y: offset.top + elem.outerHeight() / 2 - document.scrollTop()
+	    };
+	}
 
 });

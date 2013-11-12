@@ -10,7 +10,7 @@
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width">
         <link href="http://fonts.googleapis.com/css?family=Source+Sans+Pro|Open+Sans:400,300" rel="stylesheet" type="text/css">
-        <link rel="stylesheet" href="styles/3f2dab68.main.css">
+        <link rel="stylesheet" href="styles/e0b673f9.main.css">
         <script src="scripts/vendor/f7f27360.modernizr.js"></script>
     </head>
     <body>
@@ -19,9 +19,12 @@
 
             <div class="slideWrap" id="firstSlide">
                 <div class="row slide text-center">
-                    <h1>Progress</h1>
+                    <h1>Progress.js</h1>
                     <h2>The new way to view grades on the web</h2>
-                    <p class="large-6 large-offset-3 small-12">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Harum, dolor, atque quos non commodi autem ut ipsa cupiditate beatae vel molestias rerum tempore. At, sapiente.</p>
+                    <div id="names" class="large-8 large-offset-2">
+                        <h3 class="large-6 columns text-right">Connor Atherton</h3>
+                        <h3 class="large-6 columns text-left">Jordan Kirby</h3>
+                    </div>
                     <div class="next">
                         <a href="#secondSlide" class="btn nextbtn">The new way</a>
                     </div>
@@ -37,7 +40,18 @@
 
         </div>
 
-        <script src="scripts/9971d12b.main.js"></script>
+        <script src="scripts/964c5943.main.js"></script>
+        <script>
+
+            var progress = new Progress({
+                element: 'data',
+                url: 'data/connor.json'
+                // converter: function(mark) {
+                //     return mark > 65 ? 'Pass' : 'Fail';
+                // } 
+            });
+
+        </script>
 
 </body>
 </html>

@@ -133,7 +133,7 @@ Progress = (function(opts) {
         
         pie.updateWeights = function(that) {
 
-          pie.vars.clickTarget.innerHTML = 'Show Marks';
+          pie.vars.clickTarget.innerHTML = 'Show Overall Mark';
 
           var pieData = [];
           _data.forEach( function(value, index, array) {
@@ -160,29 +160,6 @@ Progress = (function(opts) {
               .ease('sin')
                .duration(300)
                .attrTween('d', pie.tweenPie);
-
-          // pie.vars.paths.on('mouseover', function(d, i) {
-
-          //     var data;
-
-          //     // change the inner html depending on the data
-          //     if(pie.vars.status === 'marks')
-          //     { 
-          //       data = 'Overall Mark: ' + d.value + '%';
-          //     }
-          //     else
-          //     {
-          //       console.log(d);
-          //       data = 'Module: ' + d.name + '\n Weight: ' + d.value + '%';
-          //     }
-              
-          //     showTooltip(data);
-
-          //   });
-
-          // pie.vars.paths.on('mouseout', function(d, i) {
-          //       removeTooltip();
-          //   });
 
           // clear the container's class lits then update class to represent pie state
           pie.vars.pieEl.className = '';
@@ -378,12 +355,14 @@ Progress = (function(opts) {
         scatter.update(scatter.vars.data.overall);
         scatter.updateCurrentPercent(scatter.vars.data.overall.overall);
         scatter.currentModule = scatter.vars.data.overall;
+        scatter.currentModuleName = 'overall';
       }
       else
       {
         scatter.update(scatter.vars.data[this.innerHTML]);
         scatter.updateCurrentPercent(scatter.vars.data[this.innerHTML].overall);
         scatter.currentModule = scatter.vars.data[this.innerHTML];
+        scatter.currentModuleName = selected.innerHTML;
 
        for(var count = 0; count < scatter.vars.data.overall.length; count++) {
 
@@ -475,8 +454,12 @@ Progress = (function(opts) {
       // .duration(100)
       .remove();
 
-    var incompletes = scatter.vars.svg.selectAll('.scatterIncomplete').call(drag);
-    console.log(incompletes);
+    if(scatter.currentModuleName !== 'overall') {
+      console.log(scatter.currentModuleName);
+      scatter.vars.svg.selectAll('.scatterIncomplete').call(drag);
+    }
+    // var incompletes = scatter.vars.svg.selectAll('.scatterIncomplete').call(drag);
+    // console.log(incompletes);
 
     // listen for hovers
     scatter.vars.svg.selectAll("circle").on('mouseover', function (d) {
@@ -771,8 +754,6 @@ Progress = (function(opts) {
         // add the weight * mark to the forecast
         forecast += (assessment.weight * assessment.mark);
 
-        console.log(assessment);
-
       })
 
       // calculate the weight factor by adding up all the weights
@@ -795,11 +776,11 @@ Progress = (function(opts) {
     data: {},
     svg: null,
     width: 900,
-    height: 600,
+    height: 700,
     forceEl: document.createElement('div'),
     charge: -4000,
     friction: 0.8,
-    distance: 50,
+    distance: 40,
     keyEl: document.createElement('div')
   }
 
