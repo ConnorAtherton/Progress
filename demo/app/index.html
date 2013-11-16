@@ -26,8 +26,7 @@
                     <h1>Progress.js</h1>
                     <h2>The new way to view grades on the web</h2>
                     <div id="names" class="large-8 large-offset-2">
-                        <h3 class="large-6 columns text-right">Connor Atherton</h3>
-                        <h3 class="large-6 columns text-left">Jordan Kirby</h3>
+                        <h3 class="large-12 columns text-center">Connor Atherton</h3>
                     </div>
                     <div class="next">
                         <a href="#secondSlide" class="btn nextbtn">The new way</a>
@@ -56,10 +55,10 @@
 
             var progress = new Progress({
                 element: 'data',
-                url: 'data/connor.json'
-                // converter: function(mark) {
-                //     return mark > 65 ? 'Pass' : 'Fail';
-                // } 
+                url: 'data/connor.json',
+                converter: function(mark) {
+                    return mark > 65 ? 'Pass' : 'Fail';
+                } 
             });
 
         </script>

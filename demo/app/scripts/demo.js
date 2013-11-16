@@ -103,7 +103,7 @@ $(document).ready(function() {
 	}
 
 	// start the presentation when the first slide is clicked on
-	$slide.first().on('click', animate());
+	// $slide.first().on('click', animate());
 
 	function findCenter(elem) {
 	    var offset,
