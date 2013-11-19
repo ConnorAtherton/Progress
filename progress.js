@@ -81,7 +81,7 @@ Progress = (function(opts) {
             
             pie.vars.clickTarget = document.createElement('div');
             pie.vars.clickTarget.setAttribute('id', 'progressPieClickTarget');
-            pie.vars.clickTarget.innerHTML = 'Show Weights';
+            pie.vars.clickTarget.innerHTML = 'Show Module Breakdown';
             pie.vars.pieEl.appendChild( pie.vars.clickTarget );
 
             // Append created DOM element to the element used for the plugin.
@@ -133,56 +133,33 @@ Progress = (function(opts) {
         
         pie.updateWeights = function(that) {
 
-          pie.vars.clickTarget.innerHTML = 'Show Marks';
+          pie.vars.clickTarget.innerHTML = 'Show Overall Mark';
 
           var pieData = [];
           _data.forEach( function(value, index, array) {
-            pieData.push(value.work.weights);
-          });
 
-          console.log(pieData);
+            pieData.push(value.work.weights);
+
+          });
 
           // change status to overall marks
           pie.vars.status = 'weights';
-
+          
           pie.vars.svg = pie.vars.svg
-                  .data(pieData);
+              .data(pieData);
 
           pie.vars.paths = pie.vars.paths
-              .data(function(d, i){ console.log(d); return _pie(d) });
+              .data(function(d, i){ return _pie(d) });
 
+          // handle exit and enter selections
           pie.vars.paths.exit().remove();
           pie.vars.paths.enter().append('path')
-            .attr('class', 'weights')
-            .attr('transform', 'translate(' + (pie.vars.pieWidth / 2) + ', ' + (pie.vars.pieHeight / 2) + ')');
+              .attr('transform', 'translate(' + (pie.vars.pieWidth / 2) + ', ' + (pie.vars.pieHeight / 2) + ')');
 
           pie.vars.paths.transition()
               .ease('sin')
-               .duration(250)
+               .duration(300)
                .attrTween('d', pie.tweenPie);
-
-          pie.vars.paths.on('mouseover', function(d, i) {
-
-              var data;
-
-              // change the inner html depending on the data
-              if(pie.vars.status === 'marks')
-              { 
-                data = 'Overall Mark: ' + d.value + '%';
-              }
-              else
-              {
-                console.log(d);
-                data = 'Module: ' + d.name + '\n Overall Mark: ' + d.value + '%';
-              }
-              
-              showTooltip(data);
-
-            });
-
-          pie.vars.paths.on('mouseout', function(d, i) {
-                removeTooltip();
-            });
 
           // clear the container's class lits then update class to represent pie state
           pie.vars.pieEl.className = '';
@@ -192,7 +169,9 @@ Progress = (function(opts) {
 
         pie.updateMarks = function(that) {
 
-          pie.vars.clickTarget.innerHTML = 'Show Weights';
+          _pie = d3.layout.pie().sort(null);
+
+          pie.vars.clickTarget.innerHTML = 'Show Module Breakdown';
 
           var pieData = [];
           _data.forEach( function(value, index, array) {
@@ -214,14 +193,11 @@ Progress = (function(opts) {
           pie.vars.paths.exit().remove();
           pie.vars.paths.enter().append('path')
               .attr('transform', 'translate(' + (pie.vars.pieWidth / 2) + ', ' + (pie.vars.pieHeight / 2) + ')');
-  ;
 
           pie.vars.paths.transition()
               .ease('sin')
                .duration(250)
-               .attrTween('d', pie.tweenPie);
-
-          pie.vars.paths.on('mouseover', function(d, i) { /* do nothing */ });
+               .attrTween('d', pie.tweenPie);;
 
           // clear the container's class lits then update class to represent pie state
           pie.vars.pieEl.className = '';
@@ -230,6 +206,8 @@ Progress = (function(opts) {
         },
 
         pie.showOverallMarks = function() {
+
+          _pie = d3.layout.pie().sort(null);
 
           var pieData = [];
           _data.forEach( function(value, index, array) {
@@ -249,6 +227,7 @@ Progress = (function(opts) {
             .data(function(d, i){ return _pie(d) })
             .enter().append('path')
               .attr('transform', 'translate(' + (pie.vars.pieWidth / 2) + ', ' + (pie.vars.pieHeight / 2) + ')');
+
           pie.vars.paths.transition()
               .ease('linear')
                .duration(5000)
@@ -318,6 +297,8 @@ Progress = (function(opts) {
     yAxis: null,
     line: null,
     lineData: null,
+    currentModule: null,
+    currentWork: 0
   }
 
   scatter.show = function() {
@@ -360,6 +341,10 @@ Progress = (function(opts) {
       var selected = d3.select('.scatterCurrent')[0][0];
       selected.classList.remove('scatterCurrent');
 
+      // if another module is clicked on then reset the 
+      // forecasted percentage
+      scatter.updateForecastPercent(undefined);
+
       var mark = undefined;
 
       // add the selected class to the clicked module
@@ -369,12 +354,15 @@ Progress = (function(opts) {
       {
         scatter.update(scatter.vars.data.overall);
         scatter.updateCurrentPercent(scatter.vars.data.overall.overall);
-        // work out the overall based on some normalization method
+        scatter.currentModule = scatter.vars.data.overall;
+        scatter.currentModuleName = 'overall';
       }
       else
       {
         scatter.update(scatter.vars.data[this.innerHTML]);
         scatter.updateCurrentPercent(scatter.vars.data[this.innerHTML].overall);
+        scatter.currentModule = scatter.vars.data[this.innerHTML];
+        scatter.currentModuleName = selected.innerHTML;
 
        for(var count = 0; count < scatter.vars.data.overall.length; count++) {
 
@@ -404,7 +392,6 @@ Progress = (function(opts) {
 
     scatter.vars.drawn = true;
 
-
   },
 
   scatter.update = function(d) {
@@ -429,8 +416,8 @@ Progress = (function(opts) {
     // Update all circles
     scatter.vars.svg.selectAll("circle")
        .data(d)
-       .transition()
-       .duration(500)
+       // .transition()
+       // .duration(300)
        .attr('cx', function(d) {
          return scatter.vars.xScale(d.name);
        })
@@ -439,23 +426,15 @@ Progress = (function(opts) {
        })
        .attr('class', function(d) {
          return scatter.checkForIncompleted(d)
-       });
+       })
 
     // enter selection
     scatter.vars.circles = scatter.vars.svg.selectAll("circle")
       .data(d)
       .enter()
       .append('circle')
+      .attr('fill', 'green')
       .attr('fill', function(d) { return '#fff'})
-      .attr('cx', function(d) {
-        return scatter.createRandomPoint();
-      })
-      .attr('cy', function(d) {
-        return scatter.createRandomPoint();
-      })
-      .transition()
-      .duration(500)
-      .attr('fill', '#f7505a')
       .attr('cx', function(d) {
         return scatter.vars.xScale(d.name);
       })
@@ -464,21 +443,27 @@ Progress = (function(opts) {
       })
       .attr('r', 4)
       .attr('class', function(d) {
-        return scatter.checkForIncompleted(d);
-      });
+        return scatter.checkForIncompleted(d)
+      })
 
     // handle exit selections
     scatter.vars.circles = scatter.vars.svg.selectAll("circle")
       .data(d)
-      .exit()
-      .transition()
-            .duration(250)
-            .style("fill-opacity", 1e-6)
-            .remove();
-    
+      .exit() 
+      // .transition()
+      // .duration(100)
+      .remove();
+
+    if(scatter.currentModuleName !== 'overall') {
+      console.log(scatter.currentModuleName);
+      scatter.vars.svg.selectAll('.scatterIncomplete').call(drag);
+    }
+    // var incompletes = scatter.vars.svg.selectAll('.scatterIncomplete').call(drag);
+    // console.log(incompletes);
+
     // listen for hovers
     scatter.vars.svg.selectAll("circle").on('mouseover', function (d) {
-      showTooltip(d.mark);
+      showTooltip(d.mark, true);
     });
 
    scatter.vars.svg.selectAll("circle").on('mouseout', function (d) {
@@ -539,7 +524,11 @@ Progress = (function(opts) {
       .attr('class', 'scatterData')
       .attr('class', function(d) {
         return scatter.checkForIncompleted(d)
-      });
+      })
+
+      // set the two mark values initially to blank 
+      scatter.updateCurrentPercent(undefined);
+      scatter.updateForecastPercent(undefined);
 
 
   }
@@ -558,12 +547,9 @@ Progress = (function(opts) {
   scatter.checkForIncompleted = function(data) {
 
     // if the data is incomplete..
-    if(data.mark === null || data.mark === undefined) {
-      // then return the incomplete class
-      return 'scatterIncomplete';
-    }
+    if(!data.completed) return 'scatterIncomplete';
 
-    // otherwise return that it is complete
+    // ..otherwise return that it is complete
     return 'scatterComplete';
 
   }
@@ -630,6 +616,7 @@ Progress = (function(opts) {
     tmpEl.innerHTML = 'Overall Modules';
     tmpEl.classList.add('scatterModule');
     tmpEl.classList.add('scatterCurrent');
+
     // append the module to the list in the DOM
     scatter.vars.scatterListEl.appendChild(tmpEl);
 
@@ -658,13 +645,13 @@ Progress = (function(opts) {
       // add the module name and overall mark to date in the overall array
       // assert that the module is completed to start with
       var tmpObj = {'name': value.name, 'mark': value.overallMark, 'completed': true}
-      scatter.vars.data.overall.push(tmpObj);
 
       // create a new array in data object for this module
       scatter.vars.data[value.name] = [];
 
       var tmpNames = [];
       var tmpMarks = [];
+      var tmpWeights = [];
 
       value.work.names.forEach( function(work) {
         tmpNames.push(work);
@@ -674,16 +661,26 @@ Progress = (function(opts) {
         tmpMarks.push(marks);
       });
 
+      value.work.names.forEach( function(work) {
+        tmpNames.push(work);
+      });
+
+      value.work.weights.forEach( function(marks) {
+        tmpWeights.push(marks);
+      });
+
       for (var i = 0; i < tmpMarks.length; i++) {
 
         if( tmpMarks[i] === (undefined || null) ) {
           tmpObj.completed = false;
         }
 
-        var tmpWorkObj = {'name': tmpNames[i], 'mark': tmpMarks[i], 'completed': isComplete(tmpMarks[i])}
+        var tmpWorkObj = {'name': tmpNames[i], 'mark': tmpMarks[i], 'weight': tmpWeights[i], 'completed': isComplete(tmpMarks[i])}
         scatter.vars.data[value.name].push(tmpWorkObj);
 
       };
+
+      scatter.vars.data.overall.push(tmpObj);
 
     }, this);
 
@@ -709,26 +706,81 @@ Progress = (function(opts) {
 
   scatter.updateForecastPercent = function(forecast) {
     
-    if( current === undefined ) {
-      current = '-';
+    if( forecast === undefined || forecast === NaN ) {
+      forecast = '-';
     } else {
       // convert the number to correct mark form
-      current = _converter(current);
+      forecast = _converter(forecast);
     }
 
-    // update the current percent element div
+    // update the forecast percent element div
     scatter.vars.forecastPercentEl.innerHTML = forecast;
+  }
+
+  scatter.ModifyGrades = function(newMark) {
+
+      var incomplete = [];
+
+      // loop through current module 
+      // and create new array containing all
+      // incomplete pieces of work
+      scatter.currentModule.forEach(function(value, index) {
+        if (!value.completed) incomplete.push(value);
+      }); 
+
+      // console.log(incomplete, incomplete[scatter.currentWork]);
+
+      // using the current index of the module that
+      // has been adjusted on the scatter graph modify the mark
+      incomplete[scatter.currentWork].mark = newMark;
+
+  }
+
+  scatter.forecast = function(module) {
+
+      var weights = [],
+          forecast = 0,
+          weightfactor = 0;
+
+      module.forEach(function(assessment) {
+        // just return is mark is falsey because
+        // we don't want to include it in our calculations
+        // HOWEVER if the mark is zero we assume the user
+        // has started scrolling and so we allow it
+        if(assessment.mark !== 0 && !assessment.mark) return;
+
+        // remember the weight for later
+        weights.push(assessment.weight);
+        // add the weight * mark to the forecast
+        forecast += (assessment.weight * assessment.mark);
+
+      })
+
+      // calculate the weight factor by adding up all the weights
+      for (var i = 0; i < weights.length; i++) {
+        weightfactor += weights[i];
+      };
+
+      console.log(weightfactor);
+
+      // finally divide the foreacast by the weight factor..
+      forecast /= weightfactor;
+
+      console.log('the forcast is ' + forecast);
+
+      // .. and return it
+      return forecast;
   }
 
   force.vars = {
     data: {},
     svg: null,
     width: 900,
-    height: 550,
+    height: 700,
     forceEl: document.createElement('div'),
-    charge: -120,
+    charge: -4000,
     friction: 0.8,
-    distance: 50,
+    distance: 40,
     keyEl: document.createElement('div')
   }
 
@@ -739,7 +791,8 @@ Progress = (function(opts) {
       // store d3 force layout in a force variables for reuse
       force.vars.force = d3.layout.force()
         .charge(force.vars.charge)
-        .linkDistance(35)
+        .linkDistance(40)
+        .gravity(1)
         .friction(force.vars.friction)
         .distance(force.vars.distance)
         .size([ force.vars.width, force.vars.height ]);
@@ -768,19 +821,21 @@ Progress = (function(opts) {
         .data(force.vars.data.nodes)
       .enter().append('circle')
         .attr('class', 'node')
-        .attr('r', 4)
+        .attr('r', function(d, i) { 
+          return force.calculateRadius(d); 
+        })
         .style('fill', function(d) { return force.fillColor(d) })
         .style('stroke', function(d) { return _color(d.group); })
         .call(force.vars.force.drag)
         .on('mouseover', function(d) {
-          showTooltip(d.name);
+          d.radius ? showTooltip(d.name + ' - ' + d.radius + '%') : showTooltip(d.name);
         })
         .on('mouseout', function(d) {
           removeTooltip();
         });
 
         // try reduce the inital bounce
-        forwardAlpha(force.vars.force, 0.02);
+        forwardAlpha(force.vars.force, 0.01);
 
         force.vars.force.on('tick', function() {
           link.attr('x1', function(d) { return d.source.x; })
@@ -796,11 +851,18 @@ Progress = (function(opts) {
         this.addKey();
   }
 
-  force.createKey = function() {
+  force.calculateRadius = function(d) {
+    var radius;
+
+    if(d.radius === undefined) return radius = 5;
+
+    return (d.radius / 4);
 
   }
 
   force.format = function(data) {
+
+    console.log(data);
 
     // create a temporary array to build up our data object
     var tmpObj = {'nodes':[], 'links':[]}
@@ -812,7 +874,7 @@ Progress = (function(opts) {
     // holds the current modules position and name
     var currentParentPos, currentParentName, currentParentObj;
 
-    tmpObj['nodes'].push({'name': 'you', 'group': 1});
+    tmpObj['nodes'].push({'name': 'You', 'group': 1});
 
     data.forEach( function(module, index, array) {
 
@@ -840,7 +902,7 @@ Progress = (function(opts) {
             currentParentObj.completed = false;
           }
 
-          tmpObj['nodes'].push({'name': module.work.names[j], 'group': i, 'completed': isComplete(module.work.marks[j])});
+          tmpObj['nodes'].push({'name': module.work.names[j], 'radius': module.work.weights[j], 'group': i, 'completed': isComplete(module.work.marks[j])});
           tmpObj['links'].push({'source': arrayPos, 'target': currentParentPos});
 
           arrayPos++;
@@ -932,8 +994,6 @@ Progress = (function(opts) {
 
   function showGraphs() {
 
-    console.log('showing graphs');
-
     if (!_data || typeof _data === 'undefined') {
       
       return false;
@@ -1015,34 +1075,46 @@ Progress = (function(opts) {
   // tooltip functions
   function createTooltip() {
 
-
     // create the tooltip, hide it and append it to the dom
-    _tooltip = document.createElement('div');
-    _tooltip.setAttribute('id', 'pieTooltip');
-    _tooltip.classList.add('tooltip');
-    _tooltip.style.display = 'none';
-    document.body.appendChild( _tooltip );
+    _tooltip = d3.select("body").append("div")   
+        .attr("class", "tooltip")             
+        .style("display", "none");
 
   }
 
   function converter(number) {
-    return number + '%';
+    return ~~number + '%';
   }
 
-  function showTooltip(data) {
+  function showTooltip(data, percent) {
 
     var coords = d3.mouse(document.body);
 
+    /**
+    
+      TODO:
+      - change to d3 .style() chain
+    
+    **/
+    
     // add initial inline styles
-    _tooltip.style.position = 'absolute';
-    _tooltip.style.left = (coords[0] - 50 )+ 'px';
-    _tooltip.style.top = (coords[1] + 15) + 'px';
+    _tooltip[0][0].style.position = 'absolute';
+    _tooltip[0][0].style.left = (coords[0] - 50 ) + 'px';
+    _tooltip[0][0].style.top = (coords[1] + 15) + 'px';
 
-    // set the tooltip's html
-    _tooltip.innerHTML = data;
+    if(percent) {
+      // set the tooltip's html
+      if (data === null || data === undefined) {
+        _tooltip[0][0].innerHTML = 'Not Completed';
+      } else {
+        _tooltip[0][0].innerHTML = converter(data);
+      }
+    } 
+    else {
+        _tooltip[0][0].innerHTML = data;
+    }
 
-    // show the tooltip on the page
-    _tooltip.style.display = 'inline';
+    _tooltip.style('display', 'inline');
 
   }
 
@@ -1050,7 +1122,7 @@ Progress = (function(opts) {
   function removeTooltip() {
 
     // hide the tooltip from the page
-    _tooltip.style.display = 'none';
+    _tooltip[0][0].style.display = 'none';
 
     // reset the tooltip coords
     _tooltip.style.left = 0;
@@ -1062,7 +1134,61 @@ Progress = (function(opts) {
   }
 
   var isComplete = function(mark) {
-    return mark === (undefined || null) ? false : true;
+    return mark === null ? false : true;
+  }
+
+  var drag = d3.behavior.drag()
+      .origin(function(d) { return d; })
+      .on("dragstart", dragstarted)
+      .on("drag", dragged)
+      .on("dragend", dragended);
+
+  function dragstarted(d, i) {
+    console.log('drag started ' + i);
+    scatter.currentWork = i;
+    d3.event.sourceEvent.stopPropagation();
+    d3.select(this).classed("dragging", true);
+  }
+
+  function dragged(d) {
+
+    d3.select(this).attr("cy", function(){
+      var newcy = ~~d3.select(this).attr("cy") + ~~d3.event.dy;
+
+      if(newcy < 35) {
+        return 35;
+      } 
+      else if (newcy > 515) {
+        return 515;
+      } 
+      else {
+        return newcy;
+      }
+    });
+
+    // modify the current module to included new temp grade
+    var newVal = scatter.vars.yScale.invert(~~d3.select(this).attr("cy"));
+    scatter.ModifyGrades(~~newVal);
+
+    var forecast = scatter.forecast(scatter.currentModule);
+    scatter.updateForecastPercent(forecast)
+
+  }
+
+  function dragended(d) {
+
+    d3.select(this).classed("dragging", false);
+  }
+
+  function getOffset( el ) {
+      var _x = 0;
+      var _y = 0;
+      while( el && !isNaN( el.offsetLeft ) && !isNaN( el.offsetTop ) ) {
+          _x += el.offsetLeft - el.scrollLeft;
+          _y += el.offsetTop - el.scrollTop;
+          el = el.offsetParent;
+      }
+      return { top: _y, left: _x };
   }
 
   // auto init
